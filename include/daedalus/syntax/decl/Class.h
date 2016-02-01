@@ -15,7 +15,7 @@ namespace daedalus {
 namespace tree {
 class TypeDeclaration : public Declaration {
 public:
-	virtual ~TypeDeclaration();
+	virtual ~TypeDeclaration() = default;
 
 	virtual void accept(tree::Visitor& visitor) = 0;
 protected:
@@ -25,18 +25,35 @@ protected:
 	}
 };
 
-class Class : public TypeDeclaration {
+class Class : public Declaration {
 public:
-	Class()
-		: TypeDeclaration(Declaration::Class)
+	static uptr<Class> create(std::string name,
+	                std::vector<uptr<tree::Variable>> members)
+	{
+		auto tmp = new Class(name, std::move(members));
+		return uptr<Class>(tmp);
+	}
+
+	virtual ~Class() = default;
+
+	virtual void accept(Visitor& visitor)
+	{
+		visitor.visit(*this);
+	}
+
+	std::vector<uptr<tree::Variable>>& members()
+	{
+		return body;
+	}
+private:
+	Class(std::string name, std::vector<uptr<tree::Variable>> members)
+		: Declaration(Declaration::Class),
+		  name(name), body(std::move(members))
 	{
 	}
-	virtual ~Class();
 
-	virtual void accept(tree::Visitor& visitor);
-private:
 	std::string name;
-	std::vector<tree::Variable*> body;
+	std::vector<uptr<tree::Variable>> body;
 };
 
 class Prototype : public TypeDeclaration {

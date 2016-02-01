@@ -13,7 +13,7 @@
 #include <daedalus/syntax/stmt/StatementBlock.h>
 namespace daedalus {
 namespace tree {
-typedef std::vector<std::unique_ptr<Variable>> ArgList;
+typedef std::vector<std::unique_ptr<Variable>> VarList;
 
 // TODO: merge with Function
 class FunctionProto : public Declaration {
@@ -21,11 +21,10 @@ public:
 	static uptr<FunctionProto>
 	create(std::string id,
 	       std::string returnType,
-	       ArgList args)
+	       VarList args)
 	{
-		uptr<FunctionProto> tmp(
-		        new FunctionProto(id, returnType, std::move(args)));
-		return std::move(tmp);
+		auto tmp = new FunctionProto(id, returnType, std::move(args));
+		return uptr<FunctionProto>(tmp);
 	}
 
 	virtual ~FunctionProto() = default;
@@ -40,7 +39,7 @@ public:
 		return returnType;
 	}
 
-	ArgList& getArguments()
+	VarList& getArguments()
 	{
 		return args;
 	}
@@ -52,7 +51,7 @@ public:
 private:
 	FunctionProto(std::string id,
 	         std::string returnType,
-	         ArgList args)
+	         VarList args)
 		: Declaration(Declaration::FunctionProto),
 		  name(id), args(std::move(args)), returnType(returnType)
 	{
@@ -60,7 +59,7 @@ private:
 
 	std::string name;
 	std::string returnType;
-	ArgList args;
+	VarList args;
 };
 
 class Function : public Declaration {
@@ -69,9 +68,8 @@ public:
 	create(uptr<tree::FunctionProto> proto,
 	       uptr<StatementBlock> body)
 	{
-		uptr<Function> tmp(new Function(
-		         std::move(proto), std::move(body)));
-		return std::move(tmp);
+		auto tmp = new Function(std::move(proto), std::move(body));
+		return uptr<Function>(tmp);
 	}
 
 	virtual ~Function() = default;

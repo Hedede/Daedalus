@@ -8,6 +8,7 @@
  */
 #include <daedalus/syntax/decl/Variable.h>
 #include <daedalus/syntax/decl/Function.h>
+#include <daedalus/syntax/decl/Class.h>
 
 #include <daedalus/syntax/expr/UnaryExpr.h>
 #include <daedalus/syntax/expr/BinaryExpr.h>
@@ -107,6 +108,14 @@ void Printer::visit(tree::Function& node)
 	start();
 	node.getBody().accept(*this);
 	end();
+	end();
+}
+
+void Printer::visit(tree::Class& node)
+{
+	start("class");
+	for (auto& var : node.members())
+		var->accept(*this);
 	end();
 }
 

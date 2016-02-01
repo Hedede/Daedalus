@@ -11,7 +11,7 @@
 #include <daedalus/syntax/Statement.h>
 namespace daedalus {
 namespace tree {
-class Exression;
+class Expression;
 /*!
  * return = 'return' expr 
  */

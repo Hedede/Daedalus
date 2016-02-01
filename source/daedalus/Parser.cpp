@@ -295,37 +295,41 @@ Parser::parseFunctionDefinition()
 uptr<tree::Declaration>
 Parser::parseClass()
 {
-	return error(diag, Location(), Diagnostic::NotImplemented, "class");
-#if 0
 	// Class name
 	if (!isIdentifier(getNextToken()))
-		return 0;
+		return error(diag, Location(), Diagnostic::UnexpectedToken,
+		             token.getData(), "class name");
 
 	std::string name = token.getData();
 
-	if (!getNextToken().getType() != tok_l_brace)
-		return new ClassDeclaration(name);
+	getNextToken(); // consume name;
+
+	if (!match(tok_l_brace))
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_l_brace);
 
 	// Class members
-	std::vector<Variable*> members;
-	while (getNextToken().getType() == kw_var) {
-		auto var = parseVariableDeclaration();
-		if (var == 0)
-			return 0;
+	std::vector<uptr<tree::Variable>> members;
+	while (match(kw_var)) {
+		auto var = parseVariable(false, true);
+		if (var == nullptr)
+			return nullptr;
 
-		members.push_back(var);
+		members.push_back(std::move(var));
 
-		getNextToken();
+		if (token == tok_r_brace)
+			break;
 
-		if (token != tok_semicolon)
-			return 0;
+		if (!match(tok_semicolon))
+			return error(diag, Location(), Diagnostic::ExpectedSemicolon,
+			             "variable declaration");
 	}
 
-	if (!getNextToken().getType() != tok_r_brace)
-		return 0;
+	if (!match(tok_r_brace))
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_r_brace);
 
-	return new ClassDeclaration(name, members);
-#endif
+	return tree::Class::create(name, std::move(members));
 }
 
 uptr<tree::Prototype>
