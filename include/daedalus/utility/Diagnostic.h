@@ -8,6 +8,7 @@
  */
 #ifndef Daedalus_Diagnostic
 #define Daedalus_Diagnostic
+#include <daedalus/utility/PrintToken.h>
 namespace daedalus {
 //! TODO
 struct Location {
@@ -57,6 +58,11 @@ std::string getDiagMsg(Diagnostic::ID id)
 Diagnostic& operator << (Diagnostic& diag, std::string str)
 {
 	return diag.arg(str);
+}
+
+Diagnostic& operator << (Diagnostic& diag, TokenType type)
+{
+	return diag.arg(spellToken(type));
 }
 } // namespace daedalus
 #endif//Daedalus_Diagnostic

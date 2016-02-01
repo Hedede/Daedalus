@@ -38,6 +38,18 @@ bool isTypeName(Token tok)
 	return true;
 }
 
+template<typename...Args>
+std::nullptr_t error(DiagnosticHelper& diag, Location loc,
+                     Diagnostic::ID id, Args... args)
+{
+	Diagnostic msg(loc, id);
+	int dummy[sizeof...(Args)] = { (msg << args, 0)... };
+	diag.report(msg);
+
+	return nullptr;
+
+}
+
 uptr<tree::Declaration>
 ErrorDeclaration(std::string msg)
 {
@@ -69,8 +81,11 @@ Parser::parseDeclaration()
 	case kw_instance:
 		decl = parseInstance();
 		break;
-	default:
+	case tok_eof:
 		return nullptr;
+	default:
+		return error(diag, Location(), Diagnostic::UnexpectedToken,
+		             token.getData(), "declaration");
 	}
 
 	/* TODO: do not forget about global variables*/
@@ -91,7 +106,8 @@ Parser::parseVariable()
 
 	// Read variable name
 	if (!isIdentifier(getNextToken()))
-		return nullptr;
+		return error(diag, Location(), Diagnostic::UnexpectedToken,
+		             token.getData(), "identifier");
 	
 	// TODO: symbol table lookup
 	std::string name = token.getData();
@@ -105,7 +121,7 @@ Parser::parseVariable()
 uptr<tree::Declaration>
 Parser::parseConstant()
 {
-	return ErrorDeclaration("NYI");
+	return error(diag, Location(), Diagnostic::NotImplemented, "const");
 #if 0
 	// Read variable type
 	if (!isTypeName(getNextToken()))
@@ -156,7 +172,8 @@ Parser::parseFunctionPrototype()
 
 	// Function name
 	if (!isIdentifier(getNextToken()))
-		return nullptr;
+		return error(diag, Location(), Diagnostic::UnexpectedToken,
+		             token.getData(), "identifier");
 
 	// TODO: symbol table lookup
 	std::string name = token.getData();
@@ -164,7 +181,8 @@ Parser::parseFunctionPrototype()
 	// consume identifier
 	getNextToken();
 	if (!match(tok_l_paren))
-		return nullptr;
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_l_paren);
 
 	// Argument list
 	std::vector<uptr<tree::Variable>> args;
@@ -182,15 +200,13 @@ Parser::parseFunctionPrototype()
 			break;
 
 		if (!match(tok_comma))
-			return unexpectedTokenError(tok_comma);
+			return error(diag, Location(),
+			             Diagnostic::UnexpectedToken2,
+			             token.getData(), tok_comma);
 	}
 	
-	if (!match(tok_r_paren)) {
-		Diagnostic msg(Location(), Diagnostic::ExpectedVariableDecl);
-		diag.report(msg);
-		// error(Diagnostic::err_unexpected_token);
-		return nullptr;
-	}
+	if (!match(tok_r_paren))
+		return error(diag, Location(), Diagnostic::ExpectedVariableDecl);
 
 	return tree::FunctionProto::create(name, ret, std::move(args));
 }
@@ -234,7 +250,7 @@ Parser::parseFunctionDefinition()
 uptr<tree::Declaration>
 Parser::parseClass()
 {
-	return ErrorDeclaration("NYI");
+	return error(diag, Location(), Diagnostic::NotImplemented, "class");
 #if 0
 	// Class name
 	if (!isIdentifier(getNextToken()))
@@ -270,13 +286,13 @@ Parser::parseClass()
 uptr<tree::Prototype>
 Parser::parsePrototype()
 {
-	return nullptr;
+	return error(diag, Location(), Diagnostic::NotImplemented, "prototype");
 }
 
 uptr<tree::Instance>
 Parser::parseInstance()
 {
-	return nullptr;
+	return error(diag, Location(), Diagnostic::NotImplemented, "instance");
 }
 
 uptr<tree::Statement>
@@ -306,12 +322,9 @@ Parser::parseExprStatement()
 {
 	auto expr = parseExpression();
 
-	if (!match(tok_semicolon)) {
-		Diagnostic msg(Location(),
-		               Diagnostic::ExpectedSemicolonAfterExpression);
-		diag.report(msg);
-		return nullptr;
-	}
+	if (!match(tok_semicolon))
+		return error(diag, Location(), Diagnostic::ExpectedSemicolon,
+		             token.getData(), "expression");
 
 	return std::move(expr);
 }
@@ -320,7 +333,8 @@ uptr<tree::StatementBlock>
 Parser::parseStatementBlock()
 {
 	if (!match(tok_l_brace))
-		return nullptr; // expected '{'
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_l_brace);
 
 	std::vector<uptr<tree::Statement>> statements;
 	while (!match(tok_r_brace)) {
@@ -346,7 +360,8 @@ Parser::parseBranchStatement()
 		return nullptr;
 
 	if (!match(tok_r_paren))
-		return unexpectedTokenError(tok_r_paren);
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_r_paren);
 
 	uptr<tree::Statement> ifBody = parseStatement();
 	if (!ifBody)
@@ -400,7 +415,8 @@ Parser::parseReturnStatement()
 		return nullptr;
 
 	if (!match(tok_semicolon))
-		return unexpectedTokenError(tok_semicolon);
+		return error(diag, Location(), Diagnostic::ExpectedSemicolon,
+		             token.getData(), "expression");
 
 	return std::make_unique<tree::ReturnStatement>(
 	        std::move(retExpr));
@@ -433,7 +449,7 @@ Parser::parsePrimaryExpr()
 	case tok_string_literal:
 		return parseStringExpr();
 	default:
-		return 0; // expected expression
+		return error(diag, Location(), Diagnostic::ExpectedExpression);
 	}
 }
 
@@ -441,12 +457,14 @@ uptr<tree::Expression>
 Parser::parseParenExpr()
 {
 	if (!match(tok_l_paren))
-		return unexpectedTokenError(tok_l_paren); // Expected (
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_l_paren);
 
 	uptr<tree::Expression> expr = parseExpression();
 
 	if (!match(tok_r_paren))
-		return unexpectedTokenError(tok_r_paren);
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_r_paren);
 
 	return expr;
 }
@@ -464,7 +482,7 @@ Parser::parseBinaryExpr(uptr<tree::Expression> LHS,
 		getNextToken(); // consume operator
 
 		uptr<tree::Expression> RHS = parseUnaryExpr();
-		if(!RHS)
+		if (!RHS)
 			return nullptr;
 
 
@@ -545,7 +563,9 @@ Parser::parseCallExpr(std::string func)
 				break;
 
 			if (!match(tok_comma))
-				return unexpectedTokenError(tok_comma); // expected ,
+				return error(diag, Location(),
+				             Diagnostic::UnexpectedToken2,
+				             token.getData(), tok_comma);
 		}
 	}
 
@@ -561,7 +581,8 @@ Parser::parseArraySubscript(uptr<tree::Expression> array)
 		return nullptr;
 
 	if (!match(tok_r_bracket))
-		return unexpectedTokenError(tok_r_bracket); // expected ,
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_r_bracket);
 
 	return std::make_unique<tree::SubscriptExpr>(
 	                std::move(array), std::move(arg));
@@ -571,7 +592,8 @@ uptr<tree::Expression>
 Parser::parseFieldAccess(std::string id)
 {
 	if (!isIdentifier(token))
-		return unexpectedTokenError(tok_identifier);
+		return error(diag, Location(), Diagnostic::UnexpectedToken,
+		             token.getData(), "identifier");
 
 	std::string field = token.getData();
 
@@ -609,10 +631,5 @@ Parser::parseNumberExpr()
 // Assumes that it is called after failed match()
 std::nullptr_t Parser::unexpectedTokenError(TokenType expected)
 {
-	Diagnostic msg(Location(), Diagnostic::UnexpectedToken);
-	msg << spellToken(expected) << spellToken(token);
-	diag.report(msg);
-
-	return nullptr;
 }
 } // namespace hrscript
