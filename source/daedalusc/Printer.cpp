@@ -113,13 +113,13 @@ void Printer::visit(tree::Function& node)
 
 void Printer::visit(tree::Variable& node)
 {
-	start(node.isConst() ? "const" : "var");
+	startInline(node.isConst() ? "const" : "var");
 	writer.put(node.getName());
 	if (node.initializer()) {
 		writer.put(' ');
 		node.initializer()->accept(*this);
 	}
-	end();
+	endInline();
 }
 
 void Printer::visit(tree::StatementBlock& node)

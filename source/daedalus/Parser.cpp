@@ -47,14 +47,16 @@ std::nullptr_t error(DiagnosticHelper& diag, Location loc,
 	diag.report(msg);
 
 	return nullptr;
-
 }
 
-uptr<tree::Declaration>
-ErrorDeclaration(std::string msg)
+bool Parser::match(TokenType expected)
 {
-	//print(msg);
-	return nullptr;
+	if (token.getType() != expected)
+		return false;
+
+	// consume token
+	getNextToken();
+	return true;
 }
 
 uptr<tree::Declaration>
@@ -156,16 +158,6 @@ Parser::parseConstant()
 	var->setInitialier(std::move(initializer));
 
 	return var;
-}
-
-bool Parser::match(TokenType expected)
-{
-	if (token.getType() != expected)
-		return false;
-
-	// consume token
-	getNextToken();
-	return true;
 }
 
 /*
@@ -607,7 +599,7 @@ Parser::parseFieldAccess(std::string id)
 uptr<tree::Expression>
 Parser::parseStringExpr()
 {
-	assert(token == tok_string_literal && "parseStringExpr called when there's no string literal!");
+	assert(token == tok_string_literal);
 
 	Token tok = token;
 	// Consume string
@@ -619,7 +611,7 @@ Parser::parseStringExpr()
 uptr<tree::Expression>
 Parser::parseNumberExpr()
 {
-	assert(token == tok_numeric_constant && "parseNumberExpr called when there's no number!");
+	assert(token == tok_numeric_constant);
 
 	// store token, because we need to consume it
 	Token tok = token;
