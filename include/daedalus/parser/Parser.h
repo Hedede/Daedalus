@@ -71,7 +71,7 @@ private:
 	uptr<tree::Declaration> parseClass();
 	uptr<tree::Prototype> parsePrototype();
 	uptr<tree::Instance> parseInstance();
-	uptr<tree::Variable> parseVariable(bool isConst);
+	uptr<tree::Variable> parseVariable(bool isConst, bool array = false);
 	uptr<tree::Declaration> parseGlobalVar();
 	uptr<tree::Declaration> parseConstant();
 
@@ -83,6 +83,9 @@ private:
 	uptr<tree::Statement> parseExprStatement();
 
 	uptr<tree::Expression> parseExpression();
+
+	uptr<tree::Expression> parseArrayInitializer();
+
 	uptr<tree::Expression> parseUnaryExpr();
 	uptr<tree::Expression> parseBinaryExpr(
 	                uptr<tree::Expression> LHS,

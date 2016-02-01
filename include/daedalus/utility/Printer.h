@@ -26,6 +26,7 @@ public:
 	virtual void visit(tree::NumberExpr& node);
 	virtual void visit(tree::StringExpr& node);
 	virtual void visit(tree::IdentifierExpr& node);
+	virtual void visit(tree::ArrayInitializer& node);
 	virtual void visit(tree::CallExpr& node);
 	virtual void visit(tree::FieldExpr& node);
 	virtual void visit(tree::SubscriptExpr& node);

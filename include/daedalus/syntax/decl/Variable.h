@@ -42,12 +42,22 @@ public:
 
 	virtual void setInitialier(std::unique_ptr<Expression> newVal)
 	{
-		val = std::move(newVal);
+		init_expr = std::move(newVal);
 	}
 
 	virtual Expression* initializer()
 	{
-		return val.get();
+		return init_expr.get();
+	}
+
+	void setSizeExpr(uptr<Expression> newSize)
+	{
+		size_expr = std::move(newSize);
+	}
+
+	Expression* sizeExpr() const
+	{
+		return size_expr.get();
 	}
 
 	std::string getName() const
@@ -57,13 +67,14 @@ public:
 private:
 	Variable(std::string id, bool constant)
 		: Declaration(Declaration::Variable),
-		  name(id), constant(constant), val(nullptr)
+		  name(id), constant(constant)
 	{
 	}
 
 	std::string name;
 	bool constant;
-	std::unique_ptr<Expression> val;
+	uptr<Expression> init_expr = nullptr;
+	uptr<Expression> size_expr = nullptr;
 };
 } // namespace tree
 } // namespace daedalus

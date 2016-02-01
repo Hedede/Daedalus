@@ -14,6 +14,7 @@
 #include <daedalus/syntax/expr/NumberExpr.h>
 #include <daedalus/syntax/expr/StringExpr.h>
 #include <daedalus/syntax/expr/IdentifierExpr.h>
+#include <daedalus/syntax/expr/InitializerExpr.h>
 #include <daedalus/syntax/expr/CallExpr.h>
 #include <daedalus/syntax/expr/FieldExpr.h>
 #include <daedalus/syntax/expr/SubscriptExpr.h>
@@ -85,9 +86,7 @@ void Printer::printSignature(tree::FunctionProto& node)
 	endLine();
 
 	for (auto& arg : node.getArguments()) {
-		startLine();
 		arg->accept(*this);
-		endLine();
 	}
 	
 	end();
@@ -113,13 +112,19 @@ void Printer::visit(tree::Function& node)
 
 void Printer::visit(tree::Variable& node)
 {
-	startInline(node.isConst() ? "const" : "var");
+	start(node.isConst() ? "const" : "var");
 	writer.put(node.getName());
+	if (node.sizeExpr()) {
+		writer.put(' ');
+		writer.put('[');
+		node.sizeExpr()->accept(*this);
+		writer.put(']');
+	}
 	if (node.initializer()) {
 		writer.put(' ');
 		node.initializer()->accept(*this);
 	}
-	endInline();
+	end();
 }
 
 void Printer::visit(tree::StatementBlock& node)
@@ -178,6 +183,15 @@ void Printer::visit(tree::IdentifierExpr& node)
 {
 	startInline(":");
 	writer.put(node.getName());
+	endInline();
+}
+
+void Printer::visit(tree::ArrayInitializer& node)
+{
+	startInline("{}");
+	for (auto& arg : node.initList()) {
+		arg->accept(*this);
+	}
 	endInline();
 }
 

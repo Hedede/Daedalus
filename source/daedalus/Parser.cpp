@@ -20,6 +20,7 @@
 #include <daedalus/syntax/expr/NumberExpr.h>
 #include <daedalus/syntax/expr/StringExpr.h>
 #include <daedalus/syntax/expr/IdentifierExpr.h>
+#include <daedalus/syntax/expr/InitializerExpr.h>
 #include <daedalus/syntax/expr/FieldExpr.h>
 #include <daedalus/syntax/expr/SubscriptExpr.h>
 
@@ -100,7 +101,7 @@ Parser::parseDeclaration()
  * variableDecl ::= 'var' type id
  */
 uptr<tree::Variable>
-Parser::parseVariable(bool isConst)
+Parser::parseVariable(bool isConst, bool array)
 {
 	// Read variable type
 	if (!isTypeName(token))
@@ -115,7 +116,23 @@ Parser::parseVariable(bool isConst)
 	std::string name = token.getData();
 	getNextToken(); // consume identifier
 
-	return tree::Variable::create(name, isConst);
+	auto var = tree::Variable::create(name, isConst);
+
+	if (match(tok_l_bracket)) {
+		if (!array)
+			return error(diag, Location(), Diagnostic::ArrayNotAllowed);
+
+		auto size_expr = parseExpression();
+		if (!size_expr)
+			return nullptr;
+		var->setSizeExpr(std::move(size_expr));
+
+		if (!match(tok_r_bracket))
+			return error(diag, Location(), Diagnostic::UnexpectedToken,
+			             token.getData(), tok_r_brace);
+	}
+
+	return var;
 }
 
 uptr<tree::Declaration>
@@ -123,7 +140,7 @@ Parser::parseGlobalVar()
 {
 	getNextToken(); // consume 'var';
 
-	auto var = parseVariable(false);
+	auto var = parseVariable(false, true);
 	if (!var)
 		return nullptr;
 
@@ -143,21 +160,52 @@ Parser::parseConstant()
 {
 	getNextToken(); // consume 'const';
 
-	auto var = parseVariable(true);
+	auto var = parseVariable(true, true);
 	if (!var)
 		return nullptr;
-
-	// TODO: array
 
 	// Read constant initializer
 	if (!match(tok_equal))
 		return error(diag, Location(), Diagnostic::UnexpectedToken,
 		             token.getData(), "constant initializer");
 
-	auto initializer = parseExpression();
+	uptr<tree::Expression> initializer;
+	if (match(tok_l_brace))
+		initializer = parseArrayInitializer();
+	else 
+		initializer = parseExpression();
+
+	if (!initializer)
+		return nullptr;
+
 	var->setInitialier(std::move(initializer));
 
 	return var;
+}
+
+uptr<tree::Expression>
+Parser::parseArrayInitializer()
+{
+	std::vector<uptr<tree::Expression>> initList;
+	while (!match(tok_r_brace)) {
+		auto expr = parseExpression();
+		if (!expr)
+			return nullptr;
+		initList.push_back(std::move(expr));
+
+		if (token == tok_r_brace)
+			break;
+
+		if (!match(tok_comma))
+			return error(diag, Location(),
+			             Diagnostic::UnexpectedToken2,
+			             token.getData(), tok_comma);
+	}
+
+	if (!match(tok_r_brace))
+		return error(diag, Location(), Diagnostic::ExpectedExpression);
+
+	return std::make_unique<tree::ArrayInitializer>(std::move(initList));
 }
 
 /*

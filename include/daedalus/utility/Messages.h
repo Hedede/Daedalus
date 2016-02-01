@@ -3,4 +3,5 @@ DIAG(error, UnexpectedToken2, "Unexpected token: expected ‘%1’, got ‘%0’
 DIAG(error, ExpectedSemicolon, "Expected ‘;’ after %0.")
 DIAG(error, ExpectedVariableDecl, "Expected variable declaration.")
 DIAG(error, ExpectedExpression, "Expected expression.")
+DIAG(error, ArrayNotAllowed, "Array is not allowed here.")
 DIAG(error, NotImplemented, "Not implemented: %0.")
