@@ -45,15 +45,11 @@ private:
 	std::vector<std::string> args;
 };
 
-std::string getDiagMsg(Diagnostic::ID id)
-{
-	switch (id) {
-	// TODO: array
-#define DIAG(type, id, msg) case Diagnostic::id: return msg;
+char const* diagMessages[] = {
+#define DIAG(type, id, msg) msg,
 #include <daedalus/utility/Messages.h>
 #undef DIAG
-	}
-}
+};
 
 Diagnostic& operator << (Diagnostic& diag, std::string str)
 {

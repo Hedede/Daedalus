@@ -20,8 +20,8 @@ public:
 
 	void report(Diagnostic diag)
 	{
-		auto msg = string::compose(
-		             getDiagMsg(diag.id), diag.args);
+		assert(size_t(diag.id) < sizeof(diagMessages)/sizeof(char*));
+		auto msg = string::compose(diagMessages[diag.id], diag.args);
 		std::cerr << msg << "\n";
 	}
 };
