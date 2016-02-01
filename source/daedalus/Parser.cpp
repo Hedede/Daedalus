@@ -319,7 +319,7 @@ Parser::parseExprStatement()
 
 	if (!match(tok_semicolon))
 		return error(diag, Location(), Diagnostic::ExpectedSemicolon,
-		             token.getData(), "expression");
+		             "expression");
 
 	return std::move(expr);
 }
@@ -334,7 +334,7 @@ Parser::parseStatementBlock()
 	std::vector<uptr<tree::Statement>> statements;
 	while (!match(tok_r_brace)) {
 		auto statement = parseStatement();
-		if(!statement)
+		if (!statement)
 			return nullptr;
 
 		statements.push_back(std::move(statement));
@@ -413,7 +413,7 @@ Parser::parseReturnStatement()
 
 	if (!match(tok_semicolon))
 		return error(diag, Location(), Diagnostic::ExpectedSemicolon,
-		             token.getData(), "expression");
+		             "expression");
 
 	return std::make_unique<tree::ReturnStatement>(
 	        std::move(retExpr));
