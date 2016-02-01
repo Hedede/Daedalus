@@ -84,6 +84,18 @@ public:
 		return *body;
 	}
 
+	/*
+	void addLocal(uptr<Variable> var)
+	{
+		localVars.push_back(std::move(var));
+	}
+
+	VarList& locals()
+	{
+		return localVars;
+	}
+	*/
+
 	virtual void accept(tree::Visitor& visitor)
 	{
 		visitor.visit(*this);
@@ -99,6 +111,7 @@ private:
 
 	uptr<tree::FunctionProto> proto;
 	uptr<StatementBlock> body;
+	//VarList localVars;
 };
 } // namespace tree
 } // namespace daedalus

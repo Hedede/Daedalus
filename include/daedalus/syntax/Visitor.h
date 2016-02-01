@@ -15,6 +15,7 @@ class FunctionProto;
 class Function;
 class Variable;
 class Class;
+class LocalDecl;
 class StatementBlock;
 class IfElseStatement;
 class ReturnStatement;
@@ -36,6 +37,7 @@ public:
 	virtual void visit(tree::Function& node) {};
 	virtual void visit(tree::Variable& node) {};
 	virtual void visit(tree::Class& node) {};
+	virtual void visit(tree::LocalDecl& node) {};
 	virtual void visit(tree::StatementBlock& node) {};
 	virtual void visit(tree::IfElseStatement& node) {};
 	virtual void visit(tree::ReturnStatement& node) {};

@@ -12,6 +12,7 @@
 #include <daedalus/syntax/decl/Class.h>
 #include <daedalus/syntax/decl/Variable.h>
 #include <daedalus/syntax/decl/Function.h>
+#include <daedalus/syntax/stmt/LocalDecl.h>
 
 #include <daedalus/syntax/Expression.h>
 #include <daedalus/syntax/expr/UnaryExpr.h>
@@ -148,8 +149,31 @@ Parser::parseGlobalVar()
 		return error(diag, Location(), Diagnostic::ExpectedSemicolon,
 		             "variable declaration");
 
-	// TODO: array
 	return var;
+}
+
+uptr<tree::Declaration>
+Parser::parseLocalVar()
+{
+	getNextToken(); // consume 'var';
+
+	auto var = parseVariable(false, true);
+	if (!var)
+		return nullptr;
+
+	// allow initializer for non-array vars
+	if (!var->sizeExpr() && match(tok_equal)) {
+		auto initializer = parseExpression();
+		if (!initializer)
+			return nullptr;
+		var->setInitialier(std::move(initializer));
+	}
+
+	if (match(tok_semicolon))
+		return var;
+
+	return error(diag, Location(), Diagnostic::ExpectedSemicolon,
+	             "variable declaration");
 }
 
 /*
@@ -354,11 +378,30 @@ Parser::parseStatement()
 	case kw_return:
 		getNextToken(); // consume 'return'
 		return parseReturnStatement();
+	case kw_const:
+	case kw_var:
+		return parseLocal();
 	case tok_l_brace:
 		return parseStatementBlock();
 	default:
 		return parseExprStatement();
 	}
+}
+
+uptr<tree::Statement>
+Parser::parseLocal()
+{
+	uptr<tree::Declaration> var;
+	if (token == kw_var)
+		var = parseLocalVar();
+
+	if (token == kw_const)
+		var = parseConstant();
+
+	if (var)
+		return std::make_unique<tree::LocalDecl>(std::move(var));
+
+	return nullptr;
 }
 
 uptr<tree::Statement>

@@ -9,6 +9,7 @@
 #include <daedalus/syntax/decl/Variable.h>
 #include <daedalus/syntax/decl/Function.h>
 #include <daedalus/syntax/decl/Class.h>
+#include <daedalus/syntax/stmt/LocalDecl.h>
 
 #include <daedalus/syntax/expr/UnaryExpr.h>
 #include <daedalus/syntax/expr/BinaryExpr.h>
@@ -134,6 +135,11 @@ void Printer::visit(tree::Variable& node)
 		node.initializer()->accept(*this);
 	}
 	end();
+}
+
+void Printer::visit(tree::LocalDecl& node)
+{
+	node.declaration().accept(*this);
 }
 
 void Printer::visit(tree::StatementBlock& node)
