@@ -13,18 +13,6 @@
 #include <daedalus/syntax/decl/Variable.h>
 namespace daedalus {
 namespace tree {
-class TypeDeclaration : public Declaration {
-public:
-	virtual ~TypeDeclaration() = default;
-
-	virtual void accept(tree::Visitor& visitor) = 0;
-protected:
-	TypeDeclaration(Declaration::Kind k)
-		: Declaration(k)
-	{
-	}
-};
-
 class Class : public Declaration {
 public:
 	static uptr<Class> create(std::string name,
@@ -56,37 +44,92 @@ private:
 	std::vector<uptr<tree::Variable>> body;
 };
 
-class Prototype : public TypeDeclaration {
+class Prototype : public Declaration {
 public:
-	Prototype()
-		: TypeDeclaration(Declaration::Prototype)
+	static uptr<Prototype> create(
+	                std::string name, std::string base,
+	                uptr<StatementBlock> body)
+	{
+		auto tmp = new Prototype(name, base, std::move(body));
+		return uptr<Prototype>(tmp);
+	}
+	virtual ~Prototype() = default;
+
+	virtual void accept(tree::Visitor& visitor)
+	{
+		visitor.visit(*this);
+	}
+
+	std::string name() const
+	{
+		return name_;
+	}
+
+	std::string base() const
+	{
+		return base_;
+	}
+
+	StatementBlock& body() const
+	{
+		return *block;
+	}
+protected:
+	Prototype(std::string name, std::string base,
+	          uptr<StatementBlock> body)
+		: Declaration(Declaration::Prototype),
+		  name_(name), base_(base), block(std::move(body))
 	{
 	}
-	virtual ~Prototype();
 
-	virtual void accept(tree::Visitor& visitor);
-protected:
-	std::string name;
-	TypeDeclaration* base;
-	// It seems like prototype allows only assignments inside it,
-	// while instance additionally allows at least function calls
-	std::vector<Statement*> stmts;
+	std::string name_;
+	std::string base_;
+
+	uptr<StatementBlock> block;
 };
 
 class Instance : public Declaration {
 public:
-	Instance()
-		: Declaration(Declaration::Instance)
+	static uptr<Instance> create(
+	                std::string name, std::string base,
+	                uptr<StatementBlock> body)
+	{
+		auto tmp = new Instance(name, base, std::move(body));
+		return uptr<Instance>(tmp);
+	}
+	virtual ~Instance() = default;
+
+	virtual void accept(tree::Visitor& visitor)
+	{
+		visitor.visit(*this);
+	}
+
+	std::string name() const
+	{
+		return name_;
+	}
+
+	std::string base() const
+	{
+		return base_;
+	}
+
+	StatementBlock& body() const
+	{
+		return *block;
+	}
+protected:
+	Instance(std::string name, std::string base,
+	          uptr<StatementBlock> body)
+		: Declaration(Declaration::Instance),
+		  name_(name), base_(base), block(std::move(body))
 	{
 	}
 
-	virtual ~Instance();
+	std::string name_;
+	std::string base_;
 
-	virtual void accept(tree::Visitor& visitor);
-private:
-	std::string name;
-	TypeDeclaration* base;
-	std::vector<Statement*> stmts;
+	uptr<StatementBlock> block;
 };
 } // namespace tree
 } // namespace daedalus

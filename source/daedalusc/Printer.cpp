@@ -112,6 +112,36 @@ void Printer::visit(tree::Function& node)
 	end();
 }
 
+void Printer::visit(tree::Prototype& node)
+{
+	start("prototype");
+	writer.put(node.name());
+	writer.put(' ');
+	writer.put('(');
+	writer.put(node.base());
+	writer.put(')');
+
+	start();
+	node.body().accept(*this);
+	end();
+	end();
+}
+
+void Printer::visit(tree::Instance& node)
+{
+	start("instance");
+	writer.put(node.name());
+	writer.put(' ');
+	writer.put('(');
+	writer.put(node.base());
+	writer.put(')');
+
+	start();
+	node.body().accept(*this);
+	end();
+	end();
+}
+
 void Printer::visit(tree::Class& node)
 {
 	start("class");

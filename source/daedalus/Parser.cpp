@@ -359,13 +359,57 @@ Parser::parseClass()
 uptr<tree::Prototype>
 Parser::parsePrototype()
 {
-	return error(diag, Location(), Diagnostic::NotImplemented, "prototype");
+	if (!isIdentifier(getNextToken()))
+		return error(diag, Location(), Diagnostic::UnexpectedToken,
+		             token.getData(), "prototype name");
+
+	std::string name = token.getData();
+	getNextToken(); // consume name;
+
+	if (!match(tok_l_paren))
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+	                     token.getData(), tok_l_paren);
+
+	std::string base = token.getData();
+	getNextToken();
+
+	if (!match(tok_r_paren))
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_r_paren);
+
+	auto body = parseStatementBlock();
+	if (!body)
+		return nullptr;
+
+	return tree::Prototype::create(name, base, std::move(body));
 }
 
 uptr<tree::Instance>
 Parser::parseInstance()
 {
-	return error(diag, Location(), Diagnostic::NotImplemented, "instance");
+	if (!isIdentifier(getNextToken()))
+		return error(diag, Location(), Diagnostic::UnexpectedToken,
+		             token.getData(), "instance name");
+
+	std::string name = token.getData();
+	getNextToken(); // consume name;
+
+	if (!match(tok_l_paren))
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_l_paren);
+
+	std::string base = token.getData();
+	getNextToken();
+
+	if (!match(tok_r_paren))
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+	                     token.getData(), tok_r_paren);
+
+	auto body = parseStatementBlock();
+	if (!body)
+		return nullptr;
+
+	return tree::Instance::create(name, base, std::move(body));
 }
 
 uptr<tree::Statement>
