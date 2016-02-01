@@ -64,7 +64,7 @@ Parser::parseDeclaration()
 
 	switch(token.getType()) {
 	case kw_var:
-		decl = parseVariable();
+		decl = parseGlobalVar();
 		break;
 	case kw_const:
 		decl = parseConstant();
@@ -95,10 +95,10 @@ Parser::parseDeclaration()
 }
 
 /*
- * variableDecl ::= 'var' id id
+ * variableDecl ::= 'var' type id
  */
 uptr<tree::Variable>
-Parser::parseVariable()
+Parser::parseVariable(bool isConst)
 {
 	// Read variable type
 	if (!isTypeName(token))
@@ -111,8 +111,26 @@ Parser::parseVariable()
 	
 	// TODO: symbol table lookup
 	std::string name = token.getData();
+	getNextToken(); // consume identifier
 
-	return tree::Variable::create(name, false);
+	return tree::Variable::create(name, isConst);
+}
+
+uptr<tree::Declaration>
+Parser::parseGlobalVar()
+{
+	getNextToken(); // consume 'var';
+
+	auto var = parseVariable(false);
+	if (!var)
+		return nullptr;
+
+	if (!match(tok_semicolon))
+		return error(diag, Location(), Diagnostic::ExpectedSemicolon,
+		             "variable declaration");
+
+	// TODO: array
+	return var;
 }
 
 /*
@@ -121,29 +139,23 @@ Parser::parseVariable()
 uptr<tree::Declaration>
 Parser::parseConstant()
 {
-	return error(diag, Location(), Diagnostic::NotImplemented, "const");
-#if 0
-	// Read variable type
-	if (!isTypeName(getNextToken()))
-		return 0;
+	getNextToken(); // consume 'const';
 
-	// Read variable name
-	if (!isIdentifier(getNextToken()))
-		return 0;
+	auto var = parseVariable(true);
+	if (!var)
+		return nullptr;
 
-	// TODO: symbol table lookup
-	std::string name = token.getData();
+	// TODO: array
 
 	// Read constant initializer
-	if (getNextToken().getType() != tok_equals)
-		return 0;
+	if (!match(tok_equal))
+		return error(diag, Location(), Diagnostic::UnexpectedToken,
+		             token.getData(), "constant initializer");
 
-	tree::Expression* initializer = parseExpression();
+	auto initializer = parseExpression();
+	var->setInitialier(std::move(initializer));
 
-	// Constant* constant = new Constant(/*symbol*/, /*thingy*/); // TODO 
-
-	return new ConstantDeclaration(name, initializer);
-#endif
+	return var;
 }
 
 bool Parser::match(TokenType expected)
@@ -188,13 +200,11 @@ Parser::parseFunctionPrototype()
 	std::vector<uptr<tree::Variable>> args;
 
 	while (match(kw_var)) {
-		auto arg = parseVariable();
+		auto arg = parseVariable(false);
 		if (!arg)
 			return nullptr;
 
 		args.push_back(std::move(arg));
-
-		getNextToken();
 
 		if (token.getType() == tok_r_paren)
 			break;

@@ -30,11 +30,6 @@ public:
 		visitor.visit(*this);
 	}
 
-	virtual Expression* getInitializer()
-	{
-		return val.get();
-	}
-
 	virtual bool isConst()
 	{
 		return constant;
@@ -50,6 +45,11 @@ public:
 		val = std::move(newVal);
 	}
 
+	virtual Expression* initializer()
+	{
+		return val.get();
+	}
+
 	std::string getName() const
 	{
 		return name;
@@ -57,13 +57,13 @@ public:
 private:
 	Variable(std::string id, bool constant)
 		: Declaration(Declaration::Variable),
-		  name(id), constant(constant)
+		  name(id), constant(constant), val(nullptr)
 	{
 	}
 
 	std::string name;
-	std::unique_ptr<Expression> val;
 	bool constant;
+	std::unique_ptr<Expression> val;
 };
 } // namespace tree
 } // namespace daedalus
