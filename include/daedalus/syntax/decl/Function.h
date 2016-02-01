@@ -54,8 +54,7 @@ private:
 	         std::string returnType,
 	         ArgList args)
 		: Declaration(Declaration::FunctionProto),
-		  name(id),
-		  returnType(returnType)
+		  name(id), args(std::move(args)), returnType(returnType)
 	{
 	}
 
