@@ -151,11 +151,9 @@ void Lexer::skipBlockComment()
 			++cur;
 		}
 
-		char const* prev = cur - 1;
-		if (*prev == '*') {
-			++cur;
+		char const* prev = cur++ - 1;
+		if (*prev == '*')
 			break;
-		}
 	}
 }
 
