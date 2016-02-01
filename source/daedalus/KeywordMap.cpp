@@ -6,8 +6,10 @@
  * This is free software: you are free to change and redistribute it.
  * There is NO WARRANTY, to the extent permitted by law.
  */
+#include <algorithm>
 #include <daedalus/lexer/KeywordMap.h>
 namespace daedalus {
+constexpr bool Case_Insensitive_Keywords = true;
 // Link token to a keyword
 KeywordMap& KeywordMap::add(std::string def, TokenType kind)
 {
@@ -18,6 +20,10 @@ KeywordMap& KeywordMap::add(std::string def, TokenType kind)
 // Get token type from string
 TokenType KeywordMap::get(std::string def)
 {
+	if (Case_Insensitive_Keywords)
+		std::transform(std::begin(def), std::end(def),
+		               std::begin(def), tolower);
+
 	auto result = theMap.find(def);
 
 	if (result == std::end(theMap))
