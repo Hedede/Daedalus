@@ -210,11 +210,6 @@ Parser::parseFunctionPrototype()
 
 	return tree::FunctionProto::create(name, ret, std::move(args));
 }
-/*
-std::nullptr_t Parser::error(Diagnostic::ID id)
-{
-	return nullptr;
-}*/
 
 /*
  * functionDef  ::= functionDecl '{' stmts '}'
@@ -622,11 +617,5 @@ Parser::parseNumberExpr()
 	getNextToken();
 
 	return std::make_unique<tree::NumberExpr>(tok.getData());
-}
-
-// Print out diagnostic and return nullptr
-// Assumes that it is called after failed match()
-std::nullptr_t Parser::unexpectedTokenError(TokenType expected)
-{
 }
 } // namespace hrscript

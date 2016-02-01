@@ -95,12 +95,6 @@ private:
 	uptr<tree::Expression> parseCallExpr(std::string func);
 	uptr<tree::Expression> parseFieldAccess(std::string id);
 	uptr<tree::Expression> parseArraySubscript(uptr<tree::Expression>);
-
-	/*!
-	 * Print out diagnostic and return nullptr
-	 * Assumes that it is called after failed match()
-	 */
-	std::nullptr_t unexpectedTokenError(TokenType expected);
 };
 } // namespace daedalus
 #endif //Daedalus_Parser
