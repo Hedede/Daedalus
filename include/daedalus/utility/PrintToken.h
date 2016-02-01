@@ -36,7 +36,7 @@ inline std::string spellToken(Token token)
 #define TOKEN1(x) tok_ ## x
 #define KEYWORD1(x) kw_ ## x
 
-std::string nameToken(TokenType type)
+inline std::string nameToken(TokenType type)
 {
 	switch (type) {
 #define TOKEN(x)   case TOKEN1(x)   : return STR(TOKEN1(x)); 
@@ -49,7 +49,7 @@ std::string nameToken(TokenType type)
 	}
 }
 
-std::string spellToken(TokenType kind)
+inline std::string spellToken(TokenType kind)
 {
 	switch (kind) {
 #define TOKEN(x)    case TOKEN1(x)   : return STR(x);
