@@ -8,6 +8,7 @@
  */
 #ifndef Daedalus_DignosticHelper
 #define Daedalus_DignosticHelper
+#include <cassert>
 #include <iostream> //temporary
 #include <daedalus/utility/string.h>
 #include <daedalus/utility/Diagnostic.h>

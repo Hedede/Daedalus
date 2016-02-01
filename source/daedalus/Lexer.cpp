@@ -201,11 +201,11 @@ char Lexer::peek()
  */
 bool Lexer::lexNextToken(Token& tok)
 {
-	char const* tok_start = cur;
-
 lexNextToken:
 	while (isspace(*cur))
 		++cur;
+
+	char const* tok_start = cur;
 
 	switch (*cur) {
 	case 0:
@@ -379,10 +379,11 @@ lexNextToken:
 		return lexIllegalToken(tok);
 	}
 
+	++cur;
+
 	std::string val(tok_start, cur);
 	tok.setData(val);
 
-	++cur;
 	return true;
 }
 } // namespace daedalus
