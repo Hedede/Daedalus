@@ -298,12 +298,7 @@ Parser::parseInstance()
 uptr<tree::Statement>
 Parser::parseStatement()
 {
-	while (true)
 	switch (token.getType()) {
-	case tok_semicolon:
-		// null statement
-		getNextToken();
-		break;
 	case kw_if:
 		getNextToken(); // consume 'if'
 		return parseBranchStatement();
@@ -344,6 +339,8 @@ Parser::parseStatementBlock()
 
 		statements.push_back(std::move(statement));
 	}
+
+	while(match(tok_semicolon));
 
 	return std::make_unique<tree::StatementBlock>(std::move(statements));
 }
