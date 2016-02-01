@@ -58,6 +58,9 @@ prec::Level getOperatorPrecedence(Token tok)
 	case tok_greater:
 	case tok_greater_equal:
 		return prec::Relational;
+	case tok_less_less:
+	case tok_greater_greater:
+		return prec::Shift;
 	case tok_plus:
 	case tok_minus:
 		return prec::Additive;
