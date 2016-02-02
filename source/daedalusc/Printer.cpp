@@ -34,31 +34,51 @@ Printer::Printer(io::WriteStream& out)
 {
 }
 
+void Printer::write(char c)
+{
+	if (state == Middle)
+		writer.put(' ');
+	writer.put(c);
+	state = Middle;
+}
+
+void Printer::write(std::string s)
+{
+	if (state == Middle)
+		writer.put(' ');
+	writer.put(s);
+	state = Middle;
+}
+
 void Printer::startLine()
 {
-	if (depth == 0)
+	if ((depth == 0) || (state != LineEnd))
 		return;
 
 	std::string indent(depth*2, ' ');
 	writer.put(indent);
+	state = LineStart;
 }
 
 void Printer::endLine()
 {
+	if (state != Middle)
+		return;
+
 	writer.put('\n');
+	state = LineEnd;
 }
 
 void Printer::startInline(std::string name)
 {
-	writer.put('(');
-	writer.put(name);
-	writer.put(' ');
+	write('(');
+	if (!name.empty())
+		write(name);
 }
 
 void Printer::endInline()
 {
-	writer.put(')');
-	writer.put(' ');
+	write(')');
 }
 
 void Printer::start(std::string name)
@@ -73,16 +93,15 @@ void Printer::end()
 {
 	--depth;
 	startLine();
-	writer.put(')');
+	write(')');
 	endLine();
 }
 
 
 void Printer::printSignature(tree::FunctionProto& node)
 {
-	writer.put(node.getReturnType());
-	writer.put(' ');
-	writer.put(node.getName());
+	write(node.getReturnType());
+	write(node.getName());
 
 	start();
 	endLine();
@@ -115,11 +134,10 @@ void Printer::visit(tree::Function& node)
 void Printer::visit(tree::Prototype& node)
 {
 	start("prototype");
-	writer.put(node.name());
-	writer.put(' ');
-	writer.put('(');
-	writer.put(node.base());
-	writer.put(')');
+	write(node.name());
+	write('(');
+	write(node.base());
+	write(')');
 
 	start();
 	node.body().accept(*this);
@@ -130,11 +148,10 @@ void Printer::visit(tree::Prototype& node)
 void Printer::visit(tree::Instance& node)
 {
 	start("instance");
-	writer.put(node.name());
-	writer.put(' ');
-	writer.put('(');
-	writer.put(node.base());
-	writer.put(')');
+	write(node.name());
+	write('(');
+	write(node.base());
+	write(')');
 
 	start();
 	node.body().accept(*this);
@@ -153,15 +170,13 @@ void Printer::visit(tree::Class& node)
 void Printer::visit(tree::Variable& node)
 {
 	start(node.isConst() ? "const" : "var");
-	writer.put(node.getName());
+	write(node.getName());
 	if (node.sizeExpr()) {
-		writer.put(' ');
 		writer.put('[');
 		node.sizeExpr()->accept(*this);
 		writer.put(']');
 	}
 	if (node.initializer()) {
-		writer.put(' ');
 		node.initializer()->accept(*this);
 	}
 	end();
@@ -214,20 +229,18 @@ void Printer::visit(tree::ReturnStatement& node)
 
 void Printer::visit(tree::NumberExpr& node)
 {
-	writer.put(node.getValue());
-	writer.put(' ');
+	write(node.getValue());
 }
+
 void Printer::visit(tree::StringExpr& node)
 {
-	writer.put('"');
-	writer.put(node.getValue());
-	writer.put(' ');
-	writer.put('"');
+	write("\"" + node.getValue() + "\"");
 }
+
 void Printer::visit(tree::IdentifierExpr& node)
 {
 	startInline(":");
-	writer.put(node.getName());
+	write(node.getName());
 	endInline();
 }
 
@@ -255,9 +268,8 @@ void Printer::visit(tree::CallExpr& node)
 void Printer::visit(tree::FieldExpr& node)
 {
 	startInline(".");
-	writer.put(node.identifier());
-	writer.put(' ');
-	writer.put(node.fieldName());
+	write(node.identifier());
+	write(node.fieldName());
 	endInline();
 }
 
@@ -265,7 +277,6 @@ void Printer::visit(tree::SubscriptExpr& node)
 {
 	startInline("[]");
 	node.array().accept(*this);
-	writer.put(' ');
 	node.subscript().accept(*this);
 	endInline();
 }

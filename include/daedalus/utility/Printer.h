@@ -39,6 +39,8 @@ public:
 
 private:
 	void printSignature(tree::FunctionProto& node);
+	void write(char c);
+	void write(std::string s);
 	void startInline(std::string name);
 	void endInline();
 	void start(std::string name = "");
@@ -48,6 +50,11 @@ private:
 
 	io::WriteStream& writer;
 	size_t depth = 0;
+	enum State {
+		LineStart,
+		Middle,
+		LineEnd,
+	} state;
 };
 } // namespace daedalus
 #endif//Daedalus_Printer
