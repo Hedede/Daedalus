@@ -481,12 +481,17 @@ Parser::parseStatementBlock()
 	return std::make_unique<tree::StatementBlock>(std::move(statements));
 }
 
+constexpr bool AllowParenlessIf = true;
+
 uptr<tree::Statement>
 Parser::parseBranchStatement()
 {
-	if (!match(tok_l_paren))
+	if (AllowParenlessIf)
 		return parseWeirdIfStatement();
-		//return unexpectedTokenError(tok_l_paren);
+
+	if (!match(tok_l_paren))
+		return error(diag, Location(), Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_l_paren);
 
 	uptr<tree::Expression> ifExpr = parseExpression();
 	if (!ifExpr)
@@ -520,7 +525,7 @@ Parser::parseWeirdIfStatement()
 	if (!ifExpr)
 		return nullptr;
 
-	uptr<tree::Statement> ifBody = parseStatementBlock();
+	uptr<tree::Statement> ifBody = parseStatement();
 	if (!ifBody)
 		return nullptr;
 
