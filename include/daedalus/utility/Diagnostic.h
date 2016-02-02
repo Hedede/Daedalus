@@ -10,10 +10,6 @@
 #define Daedalus_Diagnostic
 #include <daedalus/utility/PrintToken.h>
 namespace daedalus {
-//! TODO
-struct Location {
-};
-
 class DiagnosticsEngine;
 
 /*!

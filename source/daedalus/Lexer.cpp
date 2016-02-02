@@ -398,9 +398,9 @@ lexNextToken:
 	}
 
 	++cur;
-
 	std::string val(tok_start, cur);
 	tok.setData(val);
+	tok.setLocation(size_t(tok_start - buf->begin()));
 
 	return true;
 }

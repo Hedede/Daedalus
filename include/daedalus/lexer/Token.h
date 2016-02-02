@@ -8,7 +8,9 @@
  */
 #ifndef Daedalus_Lexer_Token
 #define Daedalus_Lexer_Token
+#include <cassert>
 #include <string>
+#include <daedalus/common/types.h>
 namespace daedalus {
 enum TokenType {
 #define TOKEN(x) tok_ ## x,
@@ -18,6 +20,16 @@ enum TokenType {
 #undef TOKEN
 #undef PUNCT
 #undef KEYWORD
+};
+
+struct Location {
+	Location() = default;
+	Location(size_t offset)
+		: pos(offset)
+	{
+		assert(offset < (1 << 31));
+	}
+	u32 pos;
 };
 
 class Token {
@@ -41,9 +53,20 @@ public:
 	{
 		data = newData;
 	}
+
+	void setLocation(Location newLoc)
+	{
+		loc = newLoc;
+	}
+
+	Location location()
+	{
+		return loc;
+	}
 private:
 	TokenType type;
 	std::string data;
+	Location loc;
 };
 
 inline bool isIdentifier(Token tok)

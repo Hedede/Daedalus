@@ -23,7 +23,8 @@ public:
 	{
 		assert(size_t(diag.id) < sizeof(diagMessages)/sizeof(char*));
 		auto msg = string::compose(diagMessages[diag.id], diag.args);
-		std::cerr << msg << "\n";
+		auto pos = diag.loc.pos;
+		std::cerr << pos << ": " << msg << "\n";
 	}
 };
 } // namespace daedalus
