@@ -415,6 +415,9 @@ Parser::parseInstance()
 		return error(diag, Location(), Diagnostic::UnexpectedToken2,
 	                     token.getData(), tok_r_paren);
 
+	if (match(tok_semicolon))
+		return tree::Instance::create(name, base, nullptr);
+
 	auto body = parseStatementBlock();
 	if (!body)
 		return nullptr;

@@ -114,9 +114,9 @@ public:
 		return base_;
 	}
 
-	StatementBlock& body() const
+	StatementBlock* body() const
 	{
-		return *block;
+		return block.get();
 	}
 protected:
 	Instance(std::string name, std::string base,

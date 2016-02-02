@@ -154,7 +154,8 @@ void Printer::visit(tree::Instance& node)
 	write(')');
 
 	start();
-	node.body().accept(*this);
+	if (node.body())
+		node.body()->accept(*this);
 	end();
 	end();
 }
