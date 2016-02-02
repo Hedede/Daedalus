@@ -54,6 +54,11 @@ Token Lexer::nextToken()
 	return currentToken();
 }
 
+char Lexer::peek()
+{
+	return *(cur + 1);
+}
+
 bool Lexer::lexIdentifier(Token& token)
 {
 	char const* start = cur;
@@ -145,29 +150,20 @@ void Lexer::skipLineComment()
 
 void Lexer::skipBlockComment()
 {
-	while (*cur != 0) {
+	while (true) {
 		// TODO: Inefficient! Check multiple chars at once
 		while (*cur != '/' && *cur != 0) {
 			++cur;
 		}
+
+		if (*cur == 0)
+			break;
 
 		char const* prev = cur++ - 1;
 		if (*prev == '*')
 			break;
 	}
 }
-
-#if 0
-void Lexer::handleComment()
-{
-	char c;
-
-	stream.peek(c);
-
-	assert((c == '*' || c == '/')
-	       && "Lexer::handleComment called without a comment");
-}
-#endif
 
 void Lexer::handleComment()
 {
@@ -190,9 +186,21 @@ void Lexer::handleComment()
 	handleComment();
 }
 
-char Lexer::peek()
+bool Lexer::lexCommentToken(Token& tok)
 {
-	return *(cur + 1);
+	char const* start = cur + 2;
+	++ cur;
+	if (*cur == '*') {
+		skipBlockComment();
+	} else if (*cur == '/') {
+		skipBlockComment();
+	}
+	if (!*cur) // reached EOF
+		return false;
+	char const* end = cur - 2;
+	tok.setType(tok_comment);
+	tok.setData(std::string(start, end));
+	return true;
 }
 
 /*!
@@ -307,13 +315,15 @@ lexNextToken:
 		break;
 	case '/':
 		// Look for comments first
-		handleComment();
+		if (keep_comments)
+			if (peek() == '/' || peek() == '*')
+				return lexCommentToken(tok);
+		else
+			handleComment();
 
 		// Check what we have, after we're done with comments
 		// If we have '/', continue handling this case.
 		// If we have something different, restart lexer.
-		// TODO: I could've just restarted the lexer regardless,
-		// is this optimization necessary?
 		if (*cur != '/')
 			// We didn't lex anything, restart the lexer.
 			goto lexNextToken;

@@ -11,6 +11,7 @@ TOKEN(eof)
 TOKEN(identifier)
 TOKEN(numeric_constant)
 TOKEN(string_literal)
+TOKEN(comment)
 
 PUNCT(comma,            ",")
 PUNCT(dot,              ".")
