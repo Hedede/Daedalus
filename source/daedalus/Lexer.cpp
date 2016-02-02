@@ -191,14 +191,15 @@ bool Lexer::lexCommentToken(Token& tok)
 	char const* start = cur + 2;
 	++ cur;
 	if (*cur == '*') {
+		tok.setType(tok_block_comment);
 		skipBlockComment();
 	} else if (*cur == '/') {
+		tok.setType(tok_line_comment);
 		skipBlockComment();
 	}
-	if (!*cur) // reached EOF
-		return false;
-	char const* end = cur - 2;
-	tok.setType(tok_comment);
+	char const* end = cur;
+	if (*cur)
+		 end -= 2;
 	tok.setData(std::string(start, end));
 	return true;
 }
@@ -315,18 +316,15 @@ lexNextToken:
 		break;
 	case '/':
 		// Look for comments first
-		if (keep_comments)
-			if (peek() == '/' || peek() == '*')
-				return lexCommentToken(tok);
-		else
+		if (!keep_comments) {
 			handleComment();
-
-		// Check what we have, after we're done with comments
-		// If we have '/', continue handling this case.
-		// If we have something different, restart lexer.
-		if (*cur != '/')
-			// We didn't lex anything, restart the lexer.
-			goto lexNextToken;
+			// Check what we have, after we're done with comments
+			// If we have '/', continue handling this case.
+			// If we have something different, restart lexer.
+			if (*cur != '/')
+				// We didn't lex anything, restart the lexer.
+				goto lexNextToken;
+		}
 
 		if (peek() == '=') {
 			tok.setType(tok_slash_equal);
@@ -334,6 +332,12 @@ lexNextToken:
 		} else {
 			tok.setType(tok_slash);
 		}
+
+		if (!keep_comments)
+			break;
+
+		if (peek() == '/' || peek() == '*')
+			return lexCommentToken(tok);
 		break;
 	case '=':
 		if (peek() == '=') {
