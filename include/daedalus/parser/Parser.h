@@ -80,7 +80,9 @@ private:
 	uptr<tree::StatementBlock> parseStatementBlock();
 	uptr<tree::Statement> parseStatement();
 	uptr<tree::Statement> parseBranchStatement();
-	uptr<tree::Statement> parseWeirdIfStatement();
+	uptr<tree::Statement> parseWhileStatement();
+	uptr<tree::Statement> parseDoWhileStatement();
+	uptr<tree::Statement> parseBreakStatement();
 	uptr<tree::Statement> parseReturnStatement();
 	uptr<tree::Statement> parseExprStatement();
 

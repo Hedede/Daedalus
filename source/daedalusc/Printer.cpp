@@ -22,6 +22,7 @@
 #include <daedalus/syntax/expr/SubscriptExpr.h>
 
 #include <daedalus/syntax/stmt/IfElseStatement.h>
+#include <daedalus/syntax/stmt/WhileStatement.h>
 #include <daedalus/syntax/stmt/ReturnStatement.h>
 #include <daedalus/syntax/stmt/StatementBlock.h>
 
@@ -216,6 +217,37 @@ void Printer::visit(tree::IfElseStatement& node)
 		end();
 	}
 	end();
+}
+
+void Printer::visit(tree::WhileStatement& node)
+{
+	start("while");
+	node.condition().accept(*this);
+
+	start("");
+	node.body().accept(*this);
+	end();
+	end();
+}
+void Printer::visit(tree::DoWhileStatement& node)
+{
+	start("do-while");
+	node.condition().accept(*this);
+
+	start("");
+	node.body().accept(*this);
+	end();
+	end();
+}
+void Printer::visit(tree::BreakStatement& node)
+{
+	startInline("break");
+	endInline();
+}
+void Printer::visit(tree::ContinueStatement& node)
+{
+	startInline("continue");
+	endInline();
 }
 
 void Printer::visit(tree::ReturnStatement& node)

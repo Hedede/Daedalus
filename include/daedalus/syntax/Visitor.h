@@ -20,6 +20,10 @@ class Instance;
 class LocalDecl;
 class StatementBlock;
 class IfElseStatement;
+class WhileStatement;
+class DoWhileStatement;
+class BreakStatement;
+class ContinueStatement;
 class ReturnStatement;
 class NumberExpr;
 class StringExpr;
@@ -41,10 +45,16 @@ public:
 	virtual void visit(tree::Class& node) {};
 	virtual void visit(tree::Prototype& node) {};
 	virtual void visit(tree::Instance& node) {};
+
 	virtual void visit(tree::LocalDecl& node) {};
 	virtual void visit(tree::StatementBlock& node) {};
 	virtual void visit(tree::IfElseStatement& node) {};
 	virtual void visit(tree::ReturnStatement& node) {};
+	virtual void visit(tree::WhileStatement& node) {};
+	virtual void visit(tree::DoWhileStatement& node) {};
+	virtual void visit(tree::BreakStatement& node) {};
+	virtual void visit(tree::ContinueStatement& node) {};
+
 	virtual void visit(tree::NumberExpr& node) {};
 	virtual void visit(tree::StringExpr& node) {};
 	virtual void visit(tree::IdentifierExpr& node) {};

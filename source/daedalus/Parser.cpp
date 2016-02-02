@@ -26,6 +26,7 @@
 #include <daedalus/syntax/expr/SubscriptExpr.h>
 
 #include <daedalus/syntax/Statement.h>
+#include <daedalus/syntax/stmt/WhileStatement.h>
 #include <daedalus/syntax/stmt/IfElseStatement.h>
 #include <daedalus/syntax/stmt/ReturnStatement.h>
 #include <daedalus/syntax/stmt/StatementBlock.h>
@@ -435,11 +436,20 @@ Parser::parseStatement()
 {
 	switch (token.getType()) {
 	case kw_if:
-		getNextToken(); // consume 'if'
+		getNextToken();
 		return parseBranchStatement();
 	case kw_return:
-		getNextToken(); // consume 'return'
+		getNextToken();
 		return parseReturnStatement();
+	case kw_while:
+		getNextToken();
+		return parseWhileStatement();
+	case kw_do:
+		getNextToken();
+		return parseDoWhileStatement();
+	case kw_break:
+	case kw_continue:
+		return parseBreakStatement();
 	case kw_const:
 	case kw_var:
 		return parseLocal();
@@ -449,6 +459,27 @@ Parser::parseStatement()
 		return parseExprStatement();
 	}
 }
+
+uptr<tree::Statement>
+Parser::parseBreakStatement()
+{
+	assert(token == kw_break || token == kw_continue);
+
+	uptr<tree::Statement> stmt;
+	if (token == kw_break)
+		stmt = tree::BreakStatement::create();
+	else if (token == kw_continue)
+		stmt = tree::ContinueStatement::create();
+
+	getNextToken();
+
+	if (match(tok_semicolon))
+		return stmt;
+
+	return error(diag, token, Diagnostic::UnexpectedToken2,
+		     token.getData(), tok_semicolon);
+}
+
 
 uptr<tree::Statement>
 Parser::parseLocal()
@@ -532,6 +563,59 @@ Parser::parseBranchStatement()
 	return std::make_unique<tree::IfElseStatement>(
 	       std::move(ifExpr), std::move(ifBody), std::move(elseBody));
 }
+
+uptr<tree::Statement>
+Parser::parseWhileStatement()
+{
+	if (!AllowParenlessIf && !match(tok_l_paren))
+		return error(diag, token, Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_l_paren);
+
+	uptr<tree::Expression> ifExpr = parseExpression();
+	if (!ifExpr)
+		return nullptr;
+
+	if (!AllowParenlessIf && !match(tok_r_paren))
+		return error(diag, token, Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_r_paren);
+
+	uptr<tree::Statement> body = parseStatement();
+	if (!body)
+		return nullptr;
+
+	return tree::WhileStatement::create(std::move(ifExpr), std::move(body));
+}
+
+uptr<tree::Statement>
+Parser::parseDoWhileStatement()
+{
+	uptr<tree::Statement> body = parseStatement();
+	if (!body)
+		return nullptr;
+
+	if (!match(kw_while))
+		return error(diag, token, Diagnostic::UnexpectedToken2,
+		             token.getData(), kw_while);
+
+	if (!AllowParenlessIf && !match(tok_l_paren))
+		return error(diag, token, Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_l_paren);
+
+	uptr<tree::Expression> ifExpr = parseExpression();
+	if (!ifExpr)
+		return nullptr;
+
+	if (!AllowParenlessIf && !match(tok_r_paren))
+		return error(diag, token, Diagnostic::UnexpectedToken2,
+		             token.getData(), tok_r_paren);
+
+	if (!match(tok_semicolon))
+		return error(diag, token, Diagnostic::ExpectedSemicolon,
+		             "do-while statement");
+
+	return tree::DoWhileStatement::create(std::move(ifExpr), std::move(body));
+}
+
 
 uptr<tree::Statement>
 Parser::parseReturnStatement()

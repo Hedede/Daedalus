@@ -9,26 +9,41 @@
 #include <daedalus/common/types.h>
 #include <daedalus/lexer/Lexer.h>
 namespace daedalus {
+namespace {
+bool in (char c, char c1)
+{
+	return c == c1;
+}
+
+template<typename... Args>
+bool in (char c, char c1, Args... chars)
+{
+	return c == c1 || in(c, chars...);
+}
+} // namespace
 Lexer::Lexer(SourceBuffer* inputBuffer)
 	: buf(inputBuffer)
 {
 	// Setup keywords
 	kwmap
 	.add("const", kw_const)
-	.add("var", kw_var)
-	.add("func", kw_func)
-	.add("if", kw_if)
-	.add("else", kw_else)
+	.add("var",   kw_var)
+	.add("func",  kw_func)
+	.add("if",    kw_if)
+	.add("else",  kw_else)
 	.add("class", kw_class)
 	.add("prototype", kw_prototype)
-	.add("instance", kw_instance)
+	.add("instance",  kw_instance)
 	.add("return", kw_return)
-	.add("void", kw_void)
-	.add("float", kw_float)
-	.add("int", kw_int)
+	.add("void",   kw_void)
+	.add("float",  kw_float)
+	.add("int",    kw_int)
 	.add("string", kw_string)
-	.add("while", kw_while)
-	.add("extern", kw_extern);
+	.add("while",  kw_while)
+	.add("do",     kw_do)
+	.add("extern", kw_extern)
+	.add("break",  kw_break)
+	.add("continue", kw_continue);
 
 	cur = buf->begin();
 
