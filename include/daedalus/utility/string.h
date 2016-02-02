@@ -9,6 +9,7 @@
  */
 #ifndef Daedalus_string
 #define Daedalus_string
+#include <algorithm>
 #include <vector>
 #include <string>
 namespace daedalus {
@@ -66,6 +67,12 @@ inline std::string as_string(char const* value)
 inline std::string as_string(std::string value)
 {
 	return value;
+}
+
+void tolower(std::string& str)
+{
+	std::transform(std::begin(str), std::end(str),
+		       std::begin(str), ::tolower);
 }
 
 std::string compose(std::string const& fmt,
