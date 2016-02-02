@@ -69,7 +69,7 @@ inline std::string as_string(std::string value)
 	return value;
 }
 
-void tolower(std::string& str)
+inline void tolower(std::string& str)
 {
 	std::transform(std::begin(str), std::end(str),
 		       std::begin(str), ::tolower);
