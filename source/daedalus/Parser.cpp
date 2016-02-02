@@ -196,7 +196,7 @@ Parser::parseConstant()
 	uptr<tree::Expression> initializer;
 	if (match(tok_l_brace))
 		initializer = parseArrayInitializer();
-	else 
+	else
 		initializer = parseExpression();
 
 	if (!initializer)
@@ -282,7 +282,7 @@ Parser::parseFunctionPrototype()
 			             Diagnostic::UnexpectedToken2,
 			             token.getData(), tok_comma);
 	}
-	
+
 	if (!match(tok_r_paren))
 		return error(diag, Location(), Diagnostic::ExpectedVariableDecl);
 
@@ -522,7 +522,7 @@ Parser::parseBranchStatement()
 	}
 
 	return std::make_unique<tree::IfElseStatement>(
-	        std::move(ifExpr), std::move(ifBody), std::move(elseBody));
+	       std::move(ifExpr), std::move(ifBody), std::move(elseBody));
 }
 
 uptr<tree::Statement>

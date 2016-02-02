@@ -90,7 +90,7 @@ void Printer::printSignature(tree::FunctionProto& node)
 	for (auto& arg : node.getArguments()) {
 		arg->accept(*this);
 	}
-	
+
 	end();
 }
 
