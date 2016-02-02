@@ -167,14 +167,14 @@ void Lexer::skipBlockComment()
 {
 	while (true) {
 		// TODO: Inefficient! Check multiple chars at once
-		while (*cur != '/' && *cur != 0) {
+		do {
 			++cur;
-		}
+		} while (*cur != '/' && *cur != 0);
 
 		if (*cur == 0)
 			break;
 
-		char const* prev = cur++ - 1;
+		char const* prev = cur - 1;
 		if (*prev == '*')
 			break;
 	}
