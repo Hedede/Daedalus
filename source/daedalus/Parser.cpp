@@ -496,10 +496,7 @@ constexpr bool AllowParenlessIf = true;
 uptr<tree::Statement>
 Parser::parseBranchStatement()
 {
-	if (AllowParenlessIf)
-		return parseWeirdIfStatement();
-
-	if (!match(tok_l_paren))
+	if (!AllowParenlessIf && !match(tok_l_paren))
 		return error(diag, Location(), Diagnostic::UnexpectedToken2,
 		             token.getData(), tok_l_paren);
 
@@ -507,7 +504,7 @@ Parser::parseBranchStatement()
 	if (!ifExpr)
 		return nullptr;
 
-	if (!match(tok_r_paren))
+	if (!AllowParenlessIf && !match(tok_r_paren))
 		return error(diag, Location(), Diagnostic::UnexpectedToken2,
 		             token.getData(), tok_r_paren);
 
@@ -526,30 +523,6 @@ Parser::parseBranchStatement()
 
 	return std::make_unique<tree::IfElseStatement>(
 	        std::move(ifExpr), std::move(ifBody), std::move(elseBody));
-}
-
-uptr<tree::Statement>
-Parser::parseWeirdIfStatement()
-{
-	uptr<tree::Expression> ifExpr = parseExpression();
-	if (!ifExpr)
-		return nullptr;
-
-	uptr<tree::Statement> ifBody = parseStatement();
-	if (!ifBody)
-		return nullptr;
-
-	uptr<tree::Statement> elseBody = nullptr;
-	if (match(kw_else)) {
-		elseBody = parseStatement();
-
-		if (!elseBody)
-			return nullptr;
-	}
-
-	return std::make_unique<tree::IfElseStatement>(
-	        std::move(ifExpr), std::move(ifBody), std::move(elseBody));
-	
 }
 
 uptr<tree::Statement>
