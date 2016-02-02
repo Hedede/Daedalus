@@ -77,7 +77,7 @@ char Lexer::peek()
 bool Lexer::lexIdentifier(Token& token)
 {
 	char const* start = cur;
-	while (isalnum(*cur) || *cur == '_') {
+	while (isalnum(*cur) || in(*cur, '_', '^', '@')) {
 		++ cur;
 	}
 
