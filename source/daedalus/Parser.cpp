@@ -145,11 +145,11 @@ Parser::parseGlobalVar()
 	if (!var)
 		return nullptr;
 
-	if (!match(tok_semicolon))
-		return error(diag, Location(), Diagnostic::ExpectedSemicolon,
-		             "variable declaration");
+	if (match(tok_semicolon))
+		return var;
 
-	return var;
+	return error(diag, Location(), Diagnostic::ExpectedSemicolon,
+		     "variable declaration");
 }
 
 uptr<tree::Declaration>
@@ -204,7 +204,11 @@ Parser::parseConstant()
 
 	var->setInitialier(std::move(initializer));
 
-	return var;
+	if (match(tok_semicolon))
+		return var;
+
+	return error(diag, Location(), Diagnostic::ExpectedSemicolon,
+	             "variable declaration");
 }
 
 uptr<tree::Expression>
@@ -343,6 +347,12 @@ Parser::parseClass()
 
 		if (token == tok_r_brace)
 			break;
+
+		/*
+		if (match(tok_comma)) {
+			lexer.unget(var.typename());
+			lexer.unget("var");
+		}*/
 
 		if (!match(tok_semicolon))
 			return error(diag, Location(), Diagnostic::ExpectedSemicolon,
