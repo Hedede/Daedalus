@@ -81,7 +81,7 @@ private:
 	uptr<tree::Statement> parseStatement();
 	uptr<tree::Statement> parseBranchStatement();
 	uptr<tree::Statement> parseWhileStatement();
-	uptr<tree::Statement> parseDoWhileStatement();
+	uptr<tree::Statement> parseDoStatement();
 	uptr<tree::Statement> parseBreakStatement();
 	uptr<tree::Statement> parseReturnStatement();
 	uptr<tree::Statement> parseExprStatement();

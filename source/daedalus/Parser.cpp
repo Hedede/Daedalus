@@ -446,7 +446,7 @@ Parser::parseStatement()
 		return parseWhileStatement();
 	case kw_do:
 		getNextToken();
-		return parseDoWhileStatement();
+		return parseDoStatement();
 	case kw_break:
 	case kw_continue:
 		return parseBreakStatement();
@@ -465,11 +465,14 @@ Parser::parseBreakStatement()
 {
 	assert(token == kw_break || token == kw_continue);
 
-	uptr<tree::Statement> stmt;
+	tree::BreakStatement::Kind kind;
+
 	if (token == kw_break)
-		stmt = tree::BreakStatement::create();
-	else if (token == kw_continue)
-		stmt = tree::ContinueStatement::create();
+		kind = tree::BreakStatement::Break;
+	else // if (token == kw_continue)
+		kind = tree::BreakStatement::Continue;
+
+	auto stmt = tree::BreakStatement::create(kind);
 
 	getNextToken();
 
@@ -583,11 +586,12 @@ Parser::parseWhileStatement()
 	if (!body)
 		return nullptr;
 
-	return tree::WhileStatement::create(std::move(ifExpr), std::move(body));
+	return tree::WhileStatement::create(tree::WhileStatement::While,
+	                std::move(ifExpr), std::move(body));
 }
 
 uptr<tree::Statement>
-Parser::parseDoWhileStatement()
+Parser::parseDoStatement()
 {
 	uptr<tree::Statement> body = parseStatement();
 	if (!body)
@@ -613,7 +617,8 @@ Parser::parseDoWhileStatement()
 		return error(diag, token, Diagnostic::ExpectedSemicolon,
 		             "do-while statement");
 
-	return tree::DoWhileStatement::create(std::move(ifExpr), std::move(body));
+	return tree::WhileStatement::create(tree::WhileStatement::Do,
+	                std::move(ifExpr), std::move(body));
 }
 
 
