@@ -99,16 +99,20 @@ bool Lexer::lexNumericConstant(Token& token)
 {
 	char const* start = cur;
 
-	// TODO: "non-greedy" algorithm
-	while (isalnum(*cur) || *cur == '.') {
+	while (isalnum(*cur))
 		++cur;
-	}
 
-	char const* prev = cur - 1;
-	if ((*cur == '-' || *cur == '+') && (*prev == 'e' || *prev == 'E')) {
+	if (*cur == '.') {
 		do {
 			++cur;
-		} while (isalnum(*cur) || *cur == '.');
+		} while (isalnum(*cur));
+
+		char const* prev = cur - 1;
+		if (in(*cur, '-', '+') && in(*prev, 'e', 'E')) {
+			do {
+				++cur;
+			} while (isalnum(*cur));
+		}
 	}
 
 	std::string num(start, cur);
