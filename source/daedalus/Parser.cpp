@@ -534,21 +534,13 @@ Parser::parseStatementBlock()
 }
 
 constexpr bool AllowParenlessIf = true;
-
 uptr<tree::Statement>
 Parser::parseBranchStatement()
 {
-	if (!AllowParenlessIf && !match(tok_l_paren))
-		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_l_paren);
-
-	uptr<tree::Expression> ifExpr = parseExpression();
+	uptr<tree::Expression> ifExpr = AllowParenlessIf ?
+	                parseExpression() : parseParenExpr();
 	if (!ifExpr)
 		return nullptr;
-
-	if (!AllowParenlessIf && !match(tok_r_paren))
-		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_r_paren);
 
 	uptr<tree::Statement> ifBody = parseStatement();
 	if (!ifBody)
@@ -570,17 +562,10 @@ Parser::parseBranchStatement()
 uptr<tree::Statement>
 Parser::parseWhileStatement()
 {
-	if (!AllowParenlessIf && !match(tok_l_paren))
-		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_l_paren);
-
-	uptr<tree::Expression> ifExpr = parseExpression();
+	uptr<tree::Expression> ifExpr = AllowParenlessIf ?
+	                parseExpression() : parseParenExpr();
 	if (!ifExpr)
 		return nullptr;
-
-	if (!AllowParenlessIf && !match(tok_r_paren))
-		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_r_paren);
 
 	uptr<tree::Statement> body = parseStatement();
 	if (!body)
@@ -601,17 +586,10 @@ Parser::parseDoStatement()
 		return error(diag, token, Diagnostic::UnexpectedToken2,
 		             token.getData(), kw_while);
 
-	if (!AllowParenlessIf && !match(tok_l_paren))
-		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_l_paren);
-
-	uptr<tree::Expression> ifExpr = parseExpression();
+	uptr<tree::Expression> ifExpr = AllowParenlessIf ?
+	                parseExpression() : parseParenExpr();
 	if (!ifExpr)
 		return nullptr;
-
-	if (!AllowParenlessIf && !match(tok_r_paren))
-		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_r_paren);
 
 	if (!match(tok_semicolon))
 		return error(diag, token, Diagnostic::ExpectedSemicolon,
