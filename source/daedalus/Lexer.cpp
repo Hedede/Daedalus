@@ -21,6 +21,8 @@ bool in (char c, char c1, Args... chars)
 	return c == c1 || in(c, chars...);
 }
 } // namespace
+
+constexpr bool EnableWhileStatements = false;
 Lexer::Lexer(SourceBuffer* inputBuffer)
 	: buf(inputBuffer)
 {
@@ -38,7 +40,10 @@ Lexer::Lexer(SourceBuffer* inputBuffer)
 	.add("void",   kw_void)
 	.add("float",  kw_float)
 	.add("int",    kw_int)
-	.add("string", kw_string)
+	.add("string", kw_string);
+
+	if (EnableWhileStatements)
+	kwmap
 	.add("while",  kw_while)
 	.add("do",     kw_do)
 	.add("extern", kw_extern)
