@@ -309,7 +309,7 @@ Parser::parseFunctionDefinition()
 		return nullptr;
 
 	if (token.getType() == tok_semicolon)
-		return std::move(proto);
+		return proto;
 
 	auto body = parseStatementBlock();
 
@@ -509,7 +509,7 @@ Parser::parseExprStatement()
 		return error(diag, token, Diagnostic::ExpectedSemicolon,
 		             "expression");
 
-	return std::move(expr);
+	return expr;
 }
 
 uptr<tree::StatementBlock>
