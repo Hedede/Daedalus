@@ -6,49 +6,42 @@
  * This is free software: you are free to change and redistribute it.
  * There is NO WARRANTY, to the extent permitted by law.
  */
-#include <daedalus/syntax/decl/Variable.h>
-#include <daedalus/syntax/decl/Function.h>
-#include <daedalus/syntax/decl/Class.h>
-#include <daedalus/syntax/stmt/LocalDecl.h>
-
-#include <daedalus/syntax/expr/UnaryExpr.h>
-#include <daedalus/syntax/expr/BinaryExpr.h>
-#include <daedalus/syntax/expr/NumberExpr.h>
-#include <daedalus/syntax/expr/StringExpr.h>
-#include <daedalus/syntax/expr/IdentifierExpr.h>
-#include <daedalus/syntax/expr/InitializerExpr.h>
-#include <daedalus/syntax/expr/CallExpr.h>
-#include <daedalus/syntax/expr/FieldExpr.h>
-#include <daedalus/syntax/expr/SubscriptExpr.h>
-
-#include <daedalus/syntax/stmt/IfElseStatement.h>
-#include <daedalus/syntax/stmt/WhileStatement.h>
-#include <daedalus/syntax/stmt/ReturnStatement.h>
-#include <daedalus/syntax/stmt/StatementBlock.h>
+#include <daedalus/syntax/Declaration.h>
+#include <daedalus/syntax/Statement.h>
+#include <daedalus/syntax/Expression.h>
 
 #include <daedalus/utility/Printer.h>
 #include <daedalus/utility/PrintToken.h>
-
 namespace daedalus {
 Printer::Printer(io::WriteStream& out)
 	: writer(out)
 {
 }
 
+void Printer::writeInline(char c)
+{
+	writer.put(c);
+	state = Middle;
+}
+
+void Printer::writeInline(std::string s)
+{
+	writer.put(s);
+	state = Middle;
+}
+
 void Printer::write(char c)
 {
 	if (state == Middle)
 		writer.put(' ');
-	writer.put(c);
-	state = Middle;
+	writeInline(c);
 }
 
 void Printer::write(std::string s)
 {
 	if (state == Middle)
 		writer.put(' ');
-	writer.put(s);
-	state = Middle;
+	writeInline(s);
 }
 
 void Printer::startLine()
@@ -74,12 +67,12 @@ void Printer::startInline(std::string name)
 {
 	write('(');
 	if (!name.empty())
-		write(name);
+		writer.put(name);
 }
 
 void Printer::endInline()
 {
-	write(')');
+	writeInline(')');
 }
 
 void Printer::start(std::string name)
@@ -94,7 +87,7 @@ void Printer::end()
 {
 	--depth;
 	startLine();
-	write(')');
+	endInline();
 	endLine();
 }
 
@@ -172,7 +165,7 @@ void Printer::visit(tree::Class& node)
 void Printer::visit(tree::Variable& node)
 {
 	start(node.isConst() ? "const" : "var");
-	write(node.getName());
+	write(node.name());
 	if (node.sizeExpr()) {
 		writer.put('[');
 		node.sizeExpr()->accept(*this);
@@ -229,14 +222,14 @@ void Printer::visit(tree::WhileStatement& node)
 	end();
 	end();
 }
-void Printer::visit(tree::DoWhileStatement& node)
+void Printer::visit(tree::DoStatement& node)
 {
-	start("do-while");
-	node.condition().accept(*this);
-
+	start("do");
 	start("");
 	node.body().accept(*this);
 	end();
+	write("while");
+	node.condition().accept(*this);
 	end();
 }
 void Printer::visit(tree::BreakStatement& node)

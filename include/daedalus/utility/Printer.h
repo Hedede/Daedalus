@@ -47,6 +47,8 @@ private:
 	void printSignature(tree::FunctionProto& node);
 	void write(char c);
 	void write(std::string s);
+	void writeInline(char c);
+	void writeInline(std::string s);
 	void startInline(std::string name);
 	void endInline();
 	void start(std::string name = "");
