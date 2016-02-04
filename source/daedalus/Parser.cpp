@@ -9,32 +9,13 @@
 #include <cassert>
 #include <vector>
 
-#include <daedalus/syntax/decl/Class.h>
-#include <daedalus/syntax/decl/Variable.h>
-#include <daedalus/syntax/decl/Function.h>
-#include <daedalus/syntax/stmt/LocalDecl.h>
-
-#include <daedalus/syntax/Expression.h>
-#include <daedalus/syntax/expr/UnaryExpr.h>
-#include <daedalus/syntax/expr/BinaryExpr.h>
-#include <daedalus/syntax/expr/CallExpr.h>
-#include <daedalus/syntax/expr/NumberExpr.h>
-#include <daedalus/syntax/expr/StringExpr.h>
-#include <daedalus/syntax/expr/IdentifierExpr.h>
-#include <daedalus/syntax/expr/InitializerExpr.h>
-#include <daedalus/syntax/expr/FieldExpr.h>
-#include <daedalus/syntax/expr/SubscriptExpr.h>
-
+#include <daedalus/syntax/Declaration.h>
 #include <daedalus/syntax/Statement.h>
-#include <daedalus/syntax/stmt/WhileStatement.h>
-#include <daedalus/syntax/stmt/IfElseStatement.h>
-#include <daedalus/syntax/stmt/ReturnStatement.h>
-#include <daedalus/syntax/stmt/StatementBlock.h>
+#include <daedalus/syntax/Expression.h>
 
 #include <daedalus/utility/PrintToken.h>
 #include <daedalus/utility/DiagnosticHelper.h>
 #include <daedalus/parser/Parser.h>
-
 namespace daedalus {
 bool isTypeName(Token tok)
 {

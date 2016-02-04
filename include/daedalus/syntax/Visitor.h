@@ -21,7 +21,7 @@ class LocalDecl;
 class StatementBlock;
 class IfElseStatement;
 class WhileStatement;
-class DoWhileStatement;
+class DoStatement;
 class BreakStatement;
 class ContinueStatement;
 class ReturnStatement;
@@ -35,6 +35,7 @@ class SubscriptExpr;
 class UnaryExpr;
 class BinaryExpr;
 
+// TODO: exprvisitor, stmtvisitor, declvisitor
 class Visitor {
 public:
 	virtual ~Visitor() = default;
@@ -51,7 +52,7 @@ public:
 	virtual void visit(tree::IfElseStatement& node) {};
 	virtual void visit(tree::ReturnStatement& node) {};
 	virtual void visit(tree::WhileStatement& node) {};
-	virtual void visit(tree::DoWhileStatement& node) {};
+	virtual void visit(tree::DoStatement& node) {};
 	virtual void visit(tree::BreakStatement& node) {};
 	virtual void visit(tree::ContinueStatement& node) {};
 

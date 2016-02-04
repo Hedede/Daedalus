@@ -7,6 +7,8 @@
  * There is NO WARRANTY, to the extent permitted by law.
  */
 #include <iostream>
+#include <daedalus/syntax/Declaration.h>
+#include <daedalus/syntax/Expression.h>
 #include <daedalus/io/WriteStream.h>
 #include <daedalus/utility/Printer.h>
 #include <daedalus/utility/DiagnosticHelper.h>
