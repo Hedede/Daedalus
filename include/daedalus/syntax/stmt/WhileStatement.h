@@ -14,21 +14,13 @@ namespace tree {
 class Exression;
 /*!
  * whileStmt   = 'while' '(' expr ')' stmt
- * doWhileStmt = 'do' stmt 'while '(' expr ')'
  */
 class WhileStatement : public Statement {
 public:
-	enum Kind {
-		While,
-		Do,
-	};
-
-	static uptr<WhileStatement> create(Kind kind,
-	                uptr<Expression> cond,
-	                uptr<Statement> stmt)
+	static uptr<WhileStatement> create(
+	                uptr<Expression> cond, uptr<Statement> stmt)
 	{
-		auto tmp = new WhileStatement(
-		                kind, std::move(cond), std::move(stmt));
+		auto tmp = new WhileStatement(std::move(cond), std::move(stmt));
 		return uptr<WhileStatement>(tmp);
 	}
 
@@ -48,48 +40,88 @@ public:
 	{
 		return *stmt;
 	}
-
-	Kind kind()
+private:
+	WhileStatement(uptr<Expression> cond, uptr<Statement> stmt)
+		: cond(std::move(cond)), stmt(std::move(stmt))
 	{
-		return kind_;
+	}
+	uptr<Expression> cond;
+	uptr<Statement>  stmt;
+};
+
+/*!
+ * DoStmt = 'do' stmt 'while '(' expr ')'
+ */
+class DoStatement : public Statement {
+public:
+	static uptr<DoStatement> create(
+	                uptr<Expression> cond, uptr<Statement> stmt)
+	{
+		auto tmp = new DoStatement(std::move(cond), std::move(stmt));
+		return uptr<DoStatement>(tmp);
+	}
+
+	virtual ~DoStatement() = default;
+
+	virtual void accept(tree::Visitor& visitor)
+	{
+		visitor.visit(*this);
+	}
+
+	Expression& condition()
+	{
+		return *cond;
+	}
+
+	Statement& body()
+	{
+		return *stmt;
 	}
 private:
-	WhileStatement(Kind kind, uptr<Expression> cond, uptr<Statement> stmt)
-		: kind_(kind), cond(std::move(cond)), stmt(std::move(stmt))
+	DoStatement(uptr<Expression> cond, uptr<Statement> stmt)
+		: cond(std::move(cond)), stmt(std::move(stmt))
 	{
 	}
-	Kind kind_;
 	uptr<Expression> cond;
 	uptr<Statement>  stmt;
 };
 
 class BreakStatement : public Statement {
 public:
-	enum Kind {
-		Break,
-		Continue,
-	};
-	static uptr<BreakStatement> create(Kind kind)
+	static uptr<BreakStatement> create()
 	{
-		auto tmp = new BreakStatement(kind);
-		return uptr<BreakStatement>(tmp);
+		return uptr<BreakStatement>(new BreakStatement);
 	}
+
 	virtual ~BreakStatement() = default;
 	virtual void accept(tree::Visitor& visitor)
 	{
 		visitor.visit(*this);
 	}
-
-	Kind kind()
+private:
+	BreakStatement()
+		: Statement()
 	{
-		return kind_;
+	}
+};
+
+class ContinueStatement : public Statement {
+public:
+	static uptr<ContinueStatement> create()
+	{
+		return uptr<ContinueStatement>(new ContinueStatement);
+	}
+
+	virtual ~ContinueStatement() = default;
+	virtual void accept(tree::Visitor& visitor)
+	{
+		visitor.visit(*this);
 	}
 private:
-	BreakStatement(Kind kind)
-		: kind_(kind)
+	ContinueStatement()
+		: Statement()
 	{
 	}
-	Kind kind_;
 };
 } // namespace tree
 } // namespace daedalus

@@ -193,7 +193,7 @@ void Printer::visit(tree::StatementBlock& node)
 {
 	start();
 	endLine();
-	for (auto& stmt : node.getStatements()) {
+	for (auto& stmt : node.statements()) {
 		startLine();
 		stmt->accept(*this);
 		endLine();

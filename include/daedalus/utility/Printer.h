@@ -29,7 +29,7 @@ public:
 	virtual void visit(tree::IfElseStatement& node);
 	virtual void visit(tree::ReturnStatement& node);
 	virtual void visit(tree::WhileStatement& node);
-	virtual void visit(tree::DoWhileStatement& node);
+	virtual void visit(tree::DoStatement& node);
 	virtual void visit(tree::BreakStatement& node);
 	virtual void visit(tree::ContinueStatement& node);
 
