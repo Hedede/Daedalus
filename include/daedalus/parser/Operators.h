@@ -66,6 +66,7 @@ prec::Level getOperatorPrecedence(Token tok)
 		return prec::Additive;
 	case tok_ast:
 	case tok_slash:
+	case tok_percent:
 		return prec::Multiplicative;	
 	}
 }
