@@ -34,6 +34,13 @@ struct Location {
 
 class Token {
 public:
+	// TODO: Illegal
+	Token() : kind(tok_illegal) { }
+	Token(char const* start, char const* end)
+		: start(start), end(end)
+	{
+	}
+
 	TokenType getType() const
 	{
 		return type;
@@ -46,12 +53,13 @@ public:
 
 	std::string getData() const
 	{
-		return data;
+		return std::string(start, end);
 	}
 
-	void setData(std::string newData)
+	void setData(char const* start, char const* end)
 	{
-		data = newData;
+		this->start = start;
+		this->end = end;
 	}
 
 	void setLocation(Location newLoc)
@@ -65,7 +73,8 @@ public:
 	}
 private:
 	TokenType type;
-	std::string data;
+	char const* start;
+	char const* end;
 	Location loc;
 };
 

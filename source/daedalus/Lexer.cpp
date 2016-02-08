@@ -95,7 +95,7 @@ bool Lexer::lexIdentifier(Token& token)
 		kind = tok_identifier;
 
 	token.setType(kind);
-	token.setData(id);
+	token.setData(start, cur);
 	
 	return true;
 }
@@ -120,9 +120,7 @@ bool Lexer::lexNumericConstant(Token& token)
 		}
 	}
 
-	std::string num(start, cur);
-
-	token.setData(num);
+	token.setData(start, cur);
 	token.setType(tok_numeric_constant);
 
 	return true;
@@ -130,21 +128,18 @@ bool Lexer::lexNumericConstant(Token& token)
 
 bool Lexer::lexStringLiteral(Token& token)
 {
-	std::string str;
-
+	char const* start = cur;
 	while (*cur != '"') {
 		if (*cur == '\\') {
 			++cur;
 		}
-		str += *cur;
 		++cur;
 	}
 
-	++cur; // consume '"'
-
-	token.setData(str);
+	token.setData(start, cur);
 	token.setType(tok_string_literal);
 
+	++cur; // consume '"'
 	return true;
 }
 
@@ -156,9 +151,7 @@ bool Lexer::lexIllegalToken(Token& token)
 		++cur;
 	}
 
-	std::string str(begin, cur);
-
-	token.setData(str);
+	token.setData(begin, cur);
 	token.setType(tok_illegal);
 
 	return true;
@@ -224,7 +217,7 @@ bool Lexer::lexCommentToken(Token& tok)
 	char const* end = cur;
 	if (*cur)
 		 end -= 2;
-	tok.setData(std::string(start, end));
+	tok.setData(start, end);
 	return true;
 }
 
@@ -422,8 +415,7 @@ lexNextToken:
 	}
 
 	++cur;
-	std::string val(tok_start, cur);
-	tok.setData(val);
+	tok.setData(tok_start, cur);
 	tok.setLocation(size_t(tok_start - buf->begin()));
 
 	return true;
