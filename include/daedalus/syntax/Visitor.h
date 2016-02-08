@@ -17,9 +17,9 @@ class Variable;
 class Class;
 class Prototype;
 class Instance;
-class LocalDecl;
+class DeclStatement;
 class StatementBlock;
-class IfElseStatement;
+class IfStatement;
 class WhileStatement;
 class DoStatement;
 class BreakStatement;
@@ -47,9 +47,9 @@ public:
 	virtual void visit(tree::Prototype& node) {};
 	virtual void visit(tree::Instance& node) {};
 
-	virtual void visit(tree::LocalDecl& node) {};
+	virtual void visit(tree::DeclStatement& node) {};
 	virtual void visit(tree::StatementBlock& node) {};
-	virtual void visit(tree::IfElseStatement& node) {};
+	virtual void visit(tree::IfStatement& node) {};
 	virtual void visit(tree::ReturnStatement& node) {};
 	virtual void visit(tree::WhileStatement& node) {};
 	virtual void visit(tree::DoStatement& node) {};

@@ -46,14 +46,13 @@ private:
 
 class Declaration;
 
-// DeclStatement
-class LocalDecl : public Statement {
+class DeclStatement : public Statement {
 public:
-	LocalDecl(uptr<Declaration> local)
+	DeclStatement(uptr<Declaration> local)
 		: decl(std::move(local))
 	{
 	}
-	virtual ~LocalDecl() = default;
+	virtual ~DeclStatement() = default;
 
 	virtual void accept(tree::Visitor& visitor)
 	{
@@ -75,38 +74,39 @@ protected:
  * ifStmt = 'if' '(' expr ')' block optElse
  * optElse = ('else' block) | ϵ
  */
-class IfElseStatement : public Statement {
+class IfStatement : public Statement {
 public:
-	IfElseStatement(uptr<Expression> ifExpr,
-	                uptr<Statement>  ifBody,
-	                uptr<Statement> elseBody)
+	IfStatement(uptr<Expression> ifExpr,
+	            uptr<Statement>  ifBody,
+	            uptr<Statement> elseBody)
 		: ifExpr(std::move(ifExpr)),
 		  ifBody(std::move(ifBody)),
 		  elseBody(std::move(elseBody))
 	{
 	}
 
-	virtual ~IfElseStatement() = default;
+	virtual ~IfStatement() = default;
 
 	virtual void accept(tree::Visitor& visitor)
 	{
 		visitor.visit(*this);
 	}
 
-	Expression& getCondition()
+	Expression& condition()
 	{
 		return *ifExpr;
 	}
 
-	Statement& getThenBranch()
+	Statement& thenBranch()
 	{
 		return *ifBody;
 	}
 
-	Statement* getElseBranch()
+	Statement* elseBranch()
 	{
 		return elseBody.get();
 	}
+
 protected:
 	uptr<Expression> ifExpr;
 	uptr<Statement>  ifBody;

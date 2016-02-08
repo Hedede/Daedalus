@@ -177,7 +177,7 @@ void Printer::visit(tree::Variable& node)
 	end();
 }
 
-void Printer::visit(tree::LocalDecl& node)
+void Printer::visit(tree::DeclStatement& node)
 {
 	node.declaration().accept(*this);
 }
@@ -194,19 +194,19 @@ void Printer::visit(tree::StatementBlock& node)
 	end();
 }
 
-void Printer::visit(tree::IfElseStatement& node)
+void Printer::visit(tree::IfStatement& node)
 {
 	start("if");
 	
-	node.getCondition().accept(*this);
+	node.condition().accept(*this);
 
 	start("then");
-	node.getThenBranch().accept(*this);
+	node.thenBranch().accept(*this);
 	end();
 
-	if (node.getElseBranch()) {
+	if (node.elseBranch()) {
 		start("else");
-		node.getElseBranch()->accept(*this);
+		node.elseBranch()->accept(*this);
 		end();
 	}
 	end();

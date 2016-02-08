@@ -473,7 +473,7 @@ Parser::parseLocal()
 		var = parseConstant();
 
 	if (var)
-		return std::make_unique<tree::LocalDecl>(std::move(var));
+		return std::make_unique<tree::DeclStatement>(std::move(var));
 
 	return nullptr;
 }
@@ -526,7 +526,7 @@ Parser::parseBranchStatement()
 
 	uptr<tree::Statement> elseBody = nullptr;
 
-	if (match(kw_else)) {
+	if (match(Token::kw_else)) {
 		elseBody = parseStatement();
 
 		if (!elseBody)
