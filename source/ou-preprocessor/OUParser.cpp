@@ -7,14 +7,14 @@
  * There is NO WARRANTY, to the extent permitted by law.
  */
 #include <cassert>
-#include <iostream>
 #include <map>
 #include <string>
+#include <functional>
+#include <iostream>
 #include <daedalus/utility/string.h>
 #include <daedalus/io/SourceBuffer.h>
 namespace daedalus {
 struct OutputUnit {
-	std::string name;
 	std::string soundFile;
 	std::string subtitle;
 };
@@ -31,121 +31,126 @@ public:
 
 	OutputUnits loadOutputUnits();
 private:
-	std::string getWord();
-	std::string processCommentText();
-	std::string processString();
+	template <class UnaryPredicate>
+	bool advance_if(UnaryPredicate predicate);
+	bool advance(char c);
+	template <class Unary1, class Unary2>
+	bool advance_if(Unary1 trueCond, Unary2 falseCond);
+	bool advance(char c, char e);
+	bool advance(std::string str);
+
 	void skipLineComment();
 	void skipBlockComment();
+	void skipComment();
 	void skipWhitespace();
-	bool eatWord(std::string prefix = "");
-	bool search(char c, char stop = 0);
-	bool search_strict(std::string str);
-	void processThing(OutputUnits& ou);
+
+	std::string readWord();
+	std::string readCommentText();
+	std::string readString();
+
 	void processAI_Output(OutputUnits& units);
-	void processInstance(OutputUnits& units);
+	void processSVMInstance(OutputUnits& units);
 
 	SourceBuffer& buf;
 	char const* cur;
+	char const* end;
 };
 
-void OUParser::skipLineComment()
+template <class UnaryPredicate>
+bool OUParser::advance_if(UnaryPredicate predicate)
 {
-	do {
-		++cur;
-	} while (*cur != '\n');
-}
-
-void OUParser::skipBlockComment()
-{
-	while (true) {
-		do {
-			++cur;
-		} while (*cur != '/' && *cur != 0);
-
-		if (*cur == 0)
-			break;
-
-		char const* prev = cur - 1;
-		if (*prev == '*')
-			break;
+	for (; cur != end; ++cur) {
+		if (predicate(*cur))
+			return true;
 	}
+	return false;
 }
 
-void OUParser::skipWhitespace()
+bool OUParser::advance(char c)
 {
-	while (isspace(*cur))
-		++cur;
+	return advance_if([c] (char x) {return x == c;});
 }
 
-std::string OUParser::getWord()
+template <class Unary1, class Unary2>
+bool OUParser::advance_if(Unary1 trueCond, Unary2 falseCond)
 {
-	auto* start = cur++;
-
-	while (isalnum(*cur) || *cur == '_')
-		++cur;
-
-	return std::string(start, cur);
-}
-
-std::string OUParser::processString()
-{
-	assert(*cur == '"');
-	++cur;
-
-	std::string str;
-	while (*cur && *cur != '"') {
-		if (*cur == '\\') {
-			++cur;
-		}
-		str += *cur++;
-	}
-	return str;
-}
-
-std::string OUParser::processCommentText()
-{
-	auto* start = cur;
-	while (*cur && *cur != '\n') {
-		 *cur++;
-	}
-	return std::string(start, cur);
-}
-
-bool OUParser::search(char c, char stop)
-{
-	while (*cur != c) {
-		if (!*cur && *cur != stop)
+	for (; cur != end; ++cur) {
+		if (trueCond(*cur))
+			return true;
+		if (falseCond(*cur))
 			return false;
-		++cur;
 	}
-	return true;
+	return false;
 }
 
-bool OUParser::search_strict(std::string str)
+bool OUParser::advance(char c, char e)
+{
+	return advance_if([c] (char x) {return x == c;},
+	              [e] (char x) {return x == e;});
+}
+
+bool OUParser::advance(std::string str)
 {
 	assert(!str.empty());
 
-	if (!search(str[0], '\n'))
+	if (!advance(str[0], '\n'))
 		return false;
 
 	for (char c : str) {
 		if (*cur++ != c) return false;
 	}
+
 	return true;
 }
 
-bool OUParser::eatWord(std::string prefix)
+void OUParser::skipComment()
 {
-	if (!prefix.empty()) {
-		if (!search_strict(prefix))
-			return false;
+	++ cur;
+	if (*cur == '/') {
+		advance('\n');
+	} else if (*cur == '*') {
+		while (true) {
+			if (!advance('/'))
+				break;
+
+			char const* prev = cur++ - 1;
+			if (*prev == '*')
+				break;
+		}
 	}
-	while (!isalnum(*cur)) {
-		if (!*cur)
-			return false;
-		++cur;
+}
+
+void OUParser::skipWhitespace()
+{
+	advance_if([] (char x) {return !isspace(x);});
+}
+
+std::string OUParser::readWord()
+{
+	auto* start = cur++;
+
+	advance_if([] (char x) {return !isalnum(x) && x != '_';});
+
+	return std::string(start, cur);
+}
+
+std::string OUParser::readString()
+{
+	++cur; // skip "
+	std::string str;
+	while (*cur && *cur != '"') {
+		if (*cur == '\\')
+			++cur;
+		str += *cur++;
 	}
-	return true;
+	return str;
+}
+
+std::string OUParser::readCommentText()
+{
+	auto* start = cur;
+	advance('\n');
+	return std::string(start, cur);
 }
 
 auto OUParser::loadOutputUnits() -> OutputUnits
@@ -153,104 +158,78 @@ auto OUParser::loadOutputUnits() -> OutputUnits
 	OutputUnits ou;
 
 	while (*cur) {
-		switch (*cur) {
-		case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G':
-		case 'H': case 'I': case 'J': case 'K': case 'L': case 'M': case 'N':
-		case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U':
-		case 'V': case 'W': case 'X': case 'Y': case 'Z':
-		case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g':
-		case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
-		case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
-		case 'v': case 'w': case 'x': case 'y': case 'z':
-			processThing(ou);
-			continue;
-		case ' ': case '\n': case '\r': case '\t': case '\v':
+		if (isalpha(*cur)) {
+			std::string id = readWord();
+			string::tolower(id);
+
+			if (id == "ai_output") {
+				processAI_Output(ou);
+			} else if (id == "instance") {
+				processSVMInstance(ou);
+			}
+		} else if (isspace(*cur)) {
 			skipWhitespace();
-			continue;
-		case '/':
+		} else if (*cur == '/') {
+			skipComment();
+		} else {
 			++cur;
-			if (*cur == '*')
-				skipBlockComment();
-			if (*cur == '/')
-				skipLineComment();
-		default:
-			++cur;
-			continue;
-		};
+		}
 	}
 
 	return ou;
 }
 
-void OUParser::processThing(OutputUnits& ou)
-{
-	std::string id = getWord();
-	string::tolower(id);
-
-	if (id == "ai_output") {
-		processAI_Output(ou);
-	} else if (id == "instance") {
-		processInstance(ou);
-	}
-}
-
 void OUParser::processAI_Output(OutputUnits& units)
 {
-	search('(');
-	search(',');
-	search(',');
+	advance('(');
+	advance(',');
+	advance(',');
 
-	if (!search('"'))
-		return;
+	if (!advance('"')) return;
 
-	auto name = processString();
+	auto name = readString();
 
-	search(')');
-	search(';');
+	advance(')');
+	advance(';');
 
-	if (!search_strict("//"))
+	if (!advance("//"))
 		return;
 	
 	OutputUnit ou;
-	ou.subtitle = processCommentText();
+	ou.subtitle = readCommentText();
 	ou.soundFile = name + ".wav";
 	units[name] = ou;
 }
 
-void OUParser::processInstance(OutputUnits& units)
+void OUParser::processSVMInstance(OutputUnits& units)
 {
-	if (!eatWord("SVM")) return;
-	search('(');
-	if (!eatWord("C_SVM")) return;
-	search(')');
-	if (!search('{')) return;
-	if (!eatWord()) return;
+	if (!advance_if(isalpha)) return;
+	advance('(');
+	if (!advance("C_SVM")) return;
+	advance(')');
+	if (!advance('{')) return;
 	
-	while (true) {
-		while (!isalnum(*cur)) {
-			if (!*cur) break;
-			if (*cur == '/') {
-				++ cur;
-				if (*(cur+1) == '/')
-					skipLineComment();
-				else if (*(cur+1) == '*')
-					skipBlockComment();
-			}
-			if (*cur == '}') break;
-			++cur;
-		}
-		if (!eatWord()) return;
-		if (!search('=')) return;
-		if (!search('"')) return;
+	while (*cur) {
+		if (isspace(*cur))
+			skipWhitespace();
 
-		auto name = processString();
+		if (*cur == '/')
+			skipComment();
 
-		search(';');
-		if (!search_strict("//"))
+		if (*cur == '}') break;
+
+		if (!advance_if(isalpha)) return;
+		if (!advance('=')) return;
+		if (!advance('"')) return;
+
+		auto name = readString();
+
+		advance(';');
+		if (!advance("//"))
 			return;
 
 		OutputUnit ou;
-		ou.subtitle = processCommentText();
+		ou.subtitle = readCommentText();
 		ou.soundFile = name + ".wav";
 		units[name] = ou;
 	};
@@ -266,6 +245,7 @@ int main(char** argv)
 	OUParser parser(buffer);
 	auto ou = parser.loadOutputUnits();
 
+	std::cout << argv[1] << std::endl;
 	for (auto& u : ou) {
 		std::cout << u.first << " = " << u.second.subtitle << std::endl;
 	}
