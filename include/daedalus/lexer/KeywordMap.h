@@ -20,17 +20,17 @@ public:
 	/*!
 	 * Add a keyword to the map.
 	*/
-	KeywordMap& add(std::string def, TokenType kind);
+	KeywordMap& add(std::string def, Token::Kind kind);
 	/*!
 	 * Get token type from string.
 	 */ 
-	TokenType get(std::string def);
+	Token::Kind get(std::string def);
 	/*!
 	 * Check if a string is keyword in the map.
 	 */
 	bool isKeyword(std::string def);
 private:
-	std::map<std::string, TokenType> theMap;
+	std::map<std::string, Token::Kind> theMap;
 };
 } // namespace daedalus
 #endif//Daedalus_Lexer_KeywordMap

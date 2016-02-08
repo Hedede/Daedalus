@@ -30,43 +30,43 @@ enum Level {
 
 prec::Level getOperatorPrecedence(Token tok)
 {
-	switch(tok.getType()) {
+	switch(tok.type()) {
 	default:
 		// Not an operator
 		return prec::None;
-	case tok_equal:
-	case tok_ast_equal:
-	case tok_plus_equal:
-	case tok_minus_equal:
-	case tok_slash_equal:
+	case Token::equal:
+	case Token::ast_equal:
+	case Token::plus_equal:
+	case Token::minus_equal:
+	case Token::slash_equal:
 		return prec::Assignment;
-	case tok_pipe_pipe:
+	case Token::pipe_pipe:
 		return prec::LogicalOr;
-	case tok_amp_amp:
+	case Token::amp_amp:
 		return prec::LogicalAnd;
-	case tok_pipe:
+	case Token::pipe:
 		return prec::BitwiseOr;
-	case tok_caret:
+	case Token::caret:
 		return prec::BitwiseXor;
-	case tok_amp:
+	case Token::amp:
 		return prec::BitwiseAnd;
-	case tok_equal_equal:
-	case tok_bang_equal:
+	case Token::equal_equal:
+	case Token::bang_equal:
 		return prec::Equality;
-	case tok_less:
-	case tok_less_equal:
-	case tok_greater:
-	case tok_greater_equal:
+	case Token::less:
+	case Token::less_equal:
+	case Token::greater:
+	case Token::greater_equal:
 		return prec::Relational;
-	case tok_less_less:
-	case tok_greater_greater:
+	case Token::less_less:
+	case Token::greater_greater:
 		return prec::Shift;
-	case tok_plus:
-	case tok_minus:
+	case Token::plus:
+	case Token::minus:
 		return prec::Additive;
-	case tok_ast:
-	case tok_slash:
-	case tok_percent:
+	case Token::ast:
+	case Token::slash:
+	case Token::percent:
 		return prec::Multiplicative;	
 	}
 }
@@ -83,11 +83,11 @@ bool isBinaryOperator(Token tok)
 
 bool isUnaryOperator(Token tok)
 {
-	switch (tok.getType()) {
-	case tok_bang:
-	case tok_tilde:
-	case tok_plus:
-	case tok_minus:
+	switch (tok.type()) {
+	case Token::bang:
+	case Token::tilde:
+	case Token::plus:
+	case Token::minus:
 		return true;
 	default:
 		return false;

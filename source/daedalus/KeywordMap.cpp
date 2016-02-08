@@ -11,14 +11,14 @@
 namespace daedalus {
 constexpr bool Case_Insensitive_Keywords = true;
 // Link token to a keyword
-KeywordMap& KeywordMap::add(std::string def, TokenType kind)
+KeywordMap& KeywordMap::add(std::string def, Token::Kind kind)
 {
 	theMap[def] = kind;
 	return *this;
 }
 
 // Get token type from string
-TokenType KeywordMap::get(std::string def)
+Token::Kind KeywordMap::get(std::string def)
 {
 	if (Case_Insensitive_Keywords)
 		string::tolower(def);
@@ -27,7 +27,7 @@ TokenType KeywordMap::get(std::string def)
 
 	if (result == std::end(theMap))
 		// TODO: better indication that it is not present
-		return tok_illegal;
+		return Token::illegal;
 
 	return theMap[def];
 }
@@ -35,6 +35,6 @@ TokenType KeywordMap::get(std::string def)
 // Check if keyword is present
 bool KeywordMap::isKeyword(std::string def)
 {
-	return get(def) != tok_illegal;
+	return get(def) != Token::illegal;
 }
 } // namespace daedalus

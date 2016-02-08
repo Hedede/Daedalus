@@ -64,7 +64,7 @@ private:
 	/*!
 	 * Match token, and consume if matched.
 	 */
-	bool match(TokenType expected);
+	bool match(Token::Kind expected);
 
 	uptr<tree::FunctionProto> parseFunctionPrototype();
 	uptr<tree::Declaration> parseFunctionDefinition();

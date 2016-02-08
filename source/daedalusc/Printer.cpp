@@ -309,7 +309,7 @@ void Printer::visit(tree::SubscriptExpr& node)
 
 void Printer::visit(tree::UnaryExpr& node)
 {
-	std::string const tmp = spellToken(TokenType(node.getOperation()));
+	std::string const tmp = spellToken(Token::Kind(node.getOperation()));
 	startInline(tmp);
 	node.getOperand().accept(*this);
 	endInline();
@@ -317,7 +317,7 @@ void Printer::visit(tree::UnaryExpr& node)
 
 void Printer::visit(tree::BinaryExpr& node)
 {
-	std::string const tmp = spellToken(TokenType(node.getOperation()));
+	std::string const tmp = spellToken(Token::Kind(node.getOperation()));
 	startInline(tmp);
 	node.getLHS().accept(*this);
 	node.getRHS().accept(*this);

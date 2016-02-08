@@ -52,7 +52,7 @@ Diagnostic& operator << (Diagnostic& diag, std::string str)
 	return diag.arg(str);
 }
 
-Diagnostic& operator << (Diagnostic& diag, TokenType type)
+Diagnostic& operator << (Diagnostic& diag, Token::Kind type)
 {
 	return diag.arg(spellToken(type));
 }

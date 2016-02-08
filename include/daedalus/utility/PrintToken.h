@@ -14,34 +14,34 @@ namespace daedalus {
 /*!
  * Print token name
  */
-inline std::string printToken(TokenType type);
+inline std::string printToken(Token::Kind type);
 
 /*!
  * Print sequence of characters which would produce the token
  */
-inline std::string spellToken(TokenType kind);
+inline std::string spellToken(Token::Kind kind);
 
 /*!
  * Get characters compirising the token.
  */
 inline std::string spellToken(Token token)
 {
-	return token.getData();
+	return token.data();
 }
 
 
 // some macro magic to print token names
 #define STR1(x) #x
 #define STR(x)  STR1(x)
-#define TOKEN1(x) tok_ ## x
-#define KEYWORD1(x) kw_ ## x
+#define TOKEN_NAME(x) Token::x
+#define KEYWORD_NAME(x) Token::kw_ ## x
 
-inline std::string nameToken(TokenType type)
+inline std::string nameToken(Token::Kind type)
 {
 	switch (type) {
-#define TOKEN(x)   case TOKEN1(x)   : return STR(TOKEN1(x)); 
+#define TOKEN(x)   case TOKEN_NAME(x)   : return STR(TOKEN1(x));
 #define PUNCT(x, y) TOKEN(x)
-#define KEYWORD(x) case KEYWORD1(x) : return STR(KEYWORD1(x));
+#define KEYWORD(x) case KEYWORD_NAME(x) : return STR(KEYWORD1(x));
 #include <daedalus/lexer/TokenDef.h>
 #undef TOKEN
 #undef PUNCT
@@ -49,12 +49,12 @@ inline std::string nameToken(TokenType type)
 	}
 }
 
-inline std::string spellToken(TokenType kind)
+inline std::string spellToken(Token::Kind kind)
 {
 	switch (kind) {
-#define TOKEN(x)    case TOKEN1(x)   : return STR(x);
-#define PUNCT(x, y) case TOKEN1(x)   : return y;
-#define KEYWORD(x)  case KEYWORD1(x) : return STR(x);
+#define TOKEN(x)    case TOKEN_NAME(x)   : return STR(x);
+#define PUNCT(x, y) case TOKEN_NAME(x)   : return y;
+#define KEYWORD(x)  case KEYWORD_NAME(x) : return STR(x);
 #include <daedalus/lexer/TokenDef.h>
 #undef TOKEN
 #undef PUNCT
@@ -62,8 +62,8 @@ inline std::string spellToken(TokenType kind)
 	}
 }
 
-#undef TOKEN1
-#undef KEYWORD1
+#undef TOKEN_NAME
+#undef KEYWORD_NAME
 #undef STR
 #undef STR1
 } // namespace daedalus

@@ -19,12 +19,12 @@
 namespace daedalus {
 bool isTypeName(Token tok)
 {
-	return isIdentifier(tok) ||
-	       tok == kw_void    ||
-	       tok == kw_float   ||
-	       tok == kw_int     ||
-	       tok == kw_string  ||
-	       tok == kw_func;
+	return isIdentifier(tok)       ||
+	       tok == Token::kw_void   ||
+	       tok == Token::kw_float  ||
+	       tok == Token::kw_int    ||
+	       tok == Token::kw_string ||
+	       tok == Token::kw_func;
 }
 
 template<typename...Args>
@@ -38,9 +38,9 @@ std::nullptr_t error(DiagnosticHelper& diag, Token tok,
 	return nullptr;
 }
 
-bool Parser::match(TokenType expected)
+bool Parser::match(Token::Kind expected)
 {
-	if (token.getType() != expected)
+	if (token.type() != expected)
 		return false;
 
 	// consume token
@@ -53,34 +53,34 @@ Parser::parseDeclaration()
 {
 	uptr<tree::Declaration> decl;
 
-	switch(token.getType()) {
-	case kw_var:
+	switch(token.type()) {
+	case Token::kw_var:
 		decl = parseGlobalVar();
 		break;
-	case kw_const:
+	case Token::kw_const:
 		decl = parseConstant();
 		break;
-	case kw_func:
+	case Token::kw_func:
 		decl = parseFunctionDefinition();
 		break;
-	case kw_class:
+	case Token::kw_class:
 		decl = parseClass();
 		break;
-	case kw_prototype:
+	case Token::kw_prototype:
 		decl = parsePrototype();
 		break;
-	case kw_instance:
+	case Token::kw_instance:
 		decl = parseInstance();
 		break;
-	case tok_eof:
+	case Token::eof:
 		return nullptr;
 	default:
 		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.getData(), "declaration");
+		             token.data(), "declaration");
 	}
 
 	/* TODO: do not forget about global variables*/
-	while (match(tok_semicolon));
+	while (match(Token::semicolon));
 
 	return decl;
 }
@@ -98,15 +98,15 @@ Parser::parseVariable(bool isConst, bool array)
 	// Read variable name
 	if (!isIdentifier(getNextToken()))
 		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.getData(), "identifier");
+		             token.data(), "identifier");
 	
 	// TODO: symbol table lookup
-	std::string name = token.getData();
+	std::string name = token.data();
 	getNextToken(); // consume identifier
 
 	auto var = tree::Variable::create(name, isConst);
 
-	if (match(tok_l_bracket)) {
+	if (match(Token::l_bracket)) {
 		if (!array)
 			return error(diag, token, Diagnostic::ArrayNotAllowed);
 
@@ -115,9 +115,9 @@ Parser::parseVariable(bool isConst, bool array)
 			return nullptr;
 		var->setSizeExpr(std::move(size_expr));
 
-		if (!match(tok_r_bracket))
+		if (!match(Token::r_bracket))
 			return error(diag, token, Diagnostic::UnexpectedToken,
-			             token.getData(), tok_r_brace);
+			             token.data(), Token::r_brace);
 	}
 
 	return var;
@@ -132,7 +132,7 @@ Parser::parseGlobalVar()
 	if (!var)
 		return nullptr;
 
-	if (match(tok_semicolon))
+	if (match(Token::semicolon))
 		return var;
 
 	return error(diag, token, Diagnostic::ExpectedSemicolon,
@@ -149,14 +149,14 @@ Parser::parseLocalVar()
 		return nullptr;
 
 	// allow initializer for non-array vars
-	if (!var->sizeExpr() && match(tok_equal)) {
+	if (!var->sizeExpr() && match(Token::equal)) {
 		auto initializer = parseExpression();
 		if (!initializer)
 			return nullptr;
 		var->setInitialier(std::move(initializer));
 	}
 
-	if (match(tok_semicolon))
+	if (match(Token::semicolon))
 		return var;
 
 	return error(diag, token, Diagnostic::ExpectedSemicolon,
@@ -176,12 +176,12 @@ Parser::parseConstant()
 		return nullptr;
 
 	// Read constant initializer
-	if (!match(tok_equal))
+	if (!match(Token::equal))
 		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.getData(), "constant initializer");
+		             token.data(), "constant initializer");
 
 	uptr<tree::Expression> initializer;
-	if (match(tok_l_brace))
+	if (match(Token::l_brace))
 		initializer = parseArrayInitializer();
 	else
 		initializer = parseExpression();
@@ -191,7 +191,7 @@ Parser::parseConstant()
 
 	var->setInitialier(std::move(initializer));
 
-	if (match(tok_semicolon))
+	if (match(Token::semicolon))
 		return var;
 
 	return error(diag, token, Diagnostic::ExpectedSemicolon,
@@ -202,22 +202,22 @@ uptr<tree::Expression>
 Parser::parseArrayInitializer()
 {
 	std::vector<uptr<tree::Expression>> initList;
-	while (!match(tok_r_brace)) {
+	while (!match(Token::r_brace)) {
 		auto expr = parseExpression();
 		if (!expr)
 			return nullptr;
 		initList.push_back(std::move(expr));
 
-		if (token == tok_r_brace)
+		if (token == Token::r_brace)
 			break;
 
-		if (!match(tok_comma))
+		if (!match(Token::comma))
 			return error(diag, token,
 			             Diagnostic::UnexpectedToken2,
-			             token.getData(), tok_comma);
+			             token.data(), Token::comma);
 	}
 
-	if (!match(tok_r_brace))
+	if (!match(Token::r_brace))
 		return error(diag, token, Diagnostic::ExpectedExpression);
 
 	return std::make_unique<tree::ArrayInitializer>(std::move(initList));
@@ -235,42 +235,42 @@ Parser::parseFunctionPrototype()
 	if (!isTypeName(token))
 		return nullptr;
 
-	std::string ret = token.getData();
+	std::string ret = token.data();
 
 	// Function name
 	if (!isIdentifier(getNextToken()))
 		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.getData(), "identifier");
+		             token.data(), "identifier");
 
 	// TODO: symbol table lookup
-	std::string name = token.getData();
+	std::string name = token.data();
 
 	// consume identifier
 	getNextToken();
-	if (!match(tok_l_paren))
+	if (!match(Token::l_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_l_paren);
+		             token.data(), Token::l_paren);
 
 	// Argument list
 	std::vector<uptr<tree::Variable>> args;
 
-	while (match(kw_var)) {
+	while (match(Token::kw_var)) {
 		auto arg = parseVariable(false);
 		if (!arg)
 			return nullptr;
 
 		args.push_back(std::move(arg));
 
-		if (token.getType() == tok_r_paren)
+		if (token.type() == Token::r_paren)
 			break;
 
-		if (!match(tok_comma))
+		if (!match(Token::comma))
 			return error(diag, token,
 			             Diagnostic::UnexpectedToken2,
-			             token.getData(), tok_comma);
+			             token.data(), Token::comma);
 	}
 
-	if (!match(tok_r_paren))
+	if (!match(Token::r_paren))
 		return error(diag, token, Diagnostic::ExpectedVariableDecl);
 
 	return tree::FunctionProto::create(name, ret, std::move(args));
@@ -289,7 +289,7 @@ Parser::parseFunctionDefinition()
 	if (!proto)
 		return nullptr;
 
-	if (token.getType() == tok_semicolon)
+	if (token.type() == Token::semicolon)
 		return proto;
 
 	auto body = parseStatementBlock();
@@ -313,42 +313,42 @@ Parser::parseClass()
 	// Class name
 	if (!isIdentifier(getNextToken()))
 		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.getData(), "class name");
+		             token.data(), "class name");
 
-	std::string name = token.getData();
+	std::string name = token.data();
 
 	getNextToken(); // consume name;
 
-	if (!match(tok_l_brace))
+	if (!match(Token::l_brace))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_l_brace);
+		             token.data(), Token::l_brace);
 
 	// Class members
 	std::vector<uptr<tree::Variable>> members;
-	while (match(kw_var)) {
+	while (match(Token::kw_var)) {
 		auto var = parseVariable(false, true);
 		if (var == nullptr)
 			return nullptr;
 
 		members.push_back(std::move(var));
 
-		if (token == tok_r_brace)
+		if (token == Token::r_brace)
 			break;
 
 		/*
-		if (match(tok_comma)) {
+		if (match(Token::comma)) {
 			lexer.unget(var.typename());
 			lexer.unget("var");
 		}*/
 
-		if (!match(tok_semicolon))
+		if (!match(Token::semicolon))
 			return error(diag, token, Diagnostic::ExpectedSemicolon,
 			             "variable declaration");
 	}
 
-	if (!match(tok_r_brace))
+	if (!match(Token::r_brace))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_r_brace);
+		             token.data(), Token::r_brace);
 
 	return tree::Class::create(name, std::move(members));
 }
@@ -358,21 +358,21 @@ Parser::parsePrototype()
 {
 	if (!isIdentifier(getNextToken()))
 		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.getData(), "prototype name");
+		             token.data(), "prototype name");
 
-	std::string name = token.getData();
+	std::string name = token.data();
 	getNextToken(); // consume name;
 
-	if (!match(tok_l_paren))
+	if (!match(Token::l_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-	                     token.getData(), tok_l_paren);
+	                     token.data(), Token::l_paren);
 
-	std::string base = token.getData();
+	std::string base = token.data();
 	getNextToken();
 
-	if (!match(tok_r_paren))
+	if (!match(Token::r_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_r_paren);
+		             token.data(), Token::r_paren);
 
 	auto body = parseStatementBlock();
 	if (!body)
@@ -386,23 +386,23 @@ Parser::parseInstance()
 {
 	if (!isIdentifier(getNextToken()))
 		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.getData(), "instance name");
+		             token.data(), "instance name");
 
-	std::string name = token.getData();
+	std::string name = token.data();
 	getNextToken(); // consume name;
 
-	if (!match(tok_l_paren))
+	if (!match(Token::l_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_l_paren);
+		             token.data(), Token::l_paren);
 
-	std::string base = token.getData();
+	std::string base = token.data();
 	getNextToken();
 
-	if (!match(tok_r_paren))
+	if (!match(Token::r_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-	                     token.getData(), tok_r_paren);
+	                     token.data(), Token::r_paren);
 
-	if (match(tok_semicolon))
+	if (match(Token::semicolon))
 		return tree::Instance::create(name, base, nullptr);
 
 	auto body = parseStatementBlock();
@@ -415,26 +415,26 @@ Parser::parseInstance()
 uptr<tree::Statement>
 Parser::parseStatement()
 {
-	switch (token.getType()) {
-	case kw_if:
+	switch (token.type()) {
+	case Token::kw_if:
 		getNextToken();
 		return parseBranchStatement();
-	case kw_return:
+	case Token::kw_return:
 		getNextToken();
 		return parseReturnStatement();
-	case kw_while:
+	case Token::kw_while:
 		getNextToken();
 		return parseWhileStatement();
-	case kw_do:
+	case Token::kw_do:
 		getNextToken();
 		return parseDoStatement();
-	case kw_break:
-	case kw_continue:
+	case Token::kw_break:
+	case Token::kw_continue:
 		return parseBreakStatement();
-	case kw_const:
-	case kw_var:
+	case Token::kw_const:
+	case Token::kw_var:
 		return parseLocal();
-	case tok_l_brace:
+	case Token::l_brace:
 		return parseStatementBlock();
 	default:
 		return parseExprStatement();
@@ -444,21 +444,21 @@ Parser::parseStatement()
 uptr<tree::Statement>
 Parser::parseBreakStatement()
 {
-	assert(token == kw_break || token == kw_continue);
+	assert(token == Token::kw_break || token == Token::kw_continue);
 
 	uptr<tree::Statement> stmt;
-	if (token == kw_break)
+	if (token == Token::kw_break)
 		stmt = tree::BreakStatement::create();
-	else if (token == kw_continue)
+	else if (token == Token::kw_continue)
 		stmt = tree::ContinueStatement::create();
 
 	getNextToken();
 
-	if (match(tok_semicolon))
+	if (match(Token::semicolon))
 		return stmt;
 
 	return error(diag, token, Diagnostic::UnexpectedToken2,
-		     token.getData(), tok_semicolon);
+		     token.data(), Token::semicolon);
 }
 
 
@@ -466,10 +466,10 @@ uptr<tree::Statement>
 Parser::parseLocal()
 {
 	uptr<tree::Declaration> var;
-	if (token == kw_var)
+	if (token == Token::kw_var)
 		var = parseLocalVar();
 
-	if (token == kw_const)
+	if (token == Token::kw_const)
 		var = parseConstant();
 
 	if (var)
@@ -483,7 +483,7 @@ Parser::parseExprStatement()
 {
 	auto expr = parseExpression();
 
-	if (!match(tok_semicolon))
+	if (!match(Token::semicolon))
 		return error(diag, token, Diagnostic::ExpectedSemicolon,
 		             "expression");
 
@@ -493,12 +493,12 @@ Parser::parseExprStatement()
 uptr<tree::StatementBlock>
 Parser::parseStatementBlock()
 {
-	if (!match(tok_l_brace))
+	if (!match(Token::l_brace))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_l_brace);
+		             token.data(), Token::l_brace);
 
 	std::vector<uptr<tree::Statement>> statements;
-	while (!match(tok_r_brace)) {
+	while (!match(Token::r_brace)) {
 		auto statement = parseStatement();
 		if (!statement)
 			return nullptr;
@@ -506,7 +506,7 @@ Parser::parseStatementBlock()
 		statements.push_back(std::move(statement));
 	}
 
-	while(match(tok_semicolon));
+	while(match(Token::semicolon));
 
 	return std::make_unique<tree::StatementBlock>(std::move(statements));
 }
@@ -533,7 +533,7 @@ Parser::parseBranchStatement()
 			return nullptr;
 	}
 
-	return std::make_unique<tree::IfElseStatement>(
+	return std::make_unique<tree::IfStatement>(
 	       std::move(ifExpr), std::move(ifBody), std::move(elseBody));
 }
 
@@ -559,16 +559,16 @@ Parser::parseDoStatement()
 	if (!body)
 		return nullptr;
 
-	if (!match(kw_while))
+	if (!match(Token::kw_while))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), kw_while);
+		             token.data(), Token::kw_while);
 
 	uptr<tree::Expression> ifExpr = AllowParenlessIf ?
 	                parseExpression() : parseParenExpr();
 	if (!ifExpr)
 		return nullptr;
 
-	if (!match(tok_semicolon))
+	if (!match(Token::semicolon))
 		return error(diag, token, Diagnostic::ExpectedSemicolon,
 		             "do-while statement");
 
@@ -579,14 +579,14 @@ Parser::parseDoStatement()
 uptr<tree::Statement>
 Parser::parseReturnStatement()
 {
-	if (match(tok_semicolon))
+	if (match(Token::semicolon))
 		return std::make_unique<tree::ReturnStatement>(nullptr);
 
 	uptr<tree::Expression> retExpr = parseExpression();
 	if (!retExpr)
 		return nullptr;
 
-	if (!match(tok_semicolon))
+	if (!match(Token::semicolon))
 		return error(diag, token, Diagnostic::ExpectedSemicolon,
 		             "expression");
 
@@ -611,14 +611,14 @@ Parser::parseExpression()
 uptr<tree::Expression>
 Parser::parsePrimaryExpr()
 {
-	switch (token.getType()) {
-	case tok_l_paren:
+	switch (token.type()) {
+	case Token::l_paren:
 		return parseParenExpr();
-	case tok_identifier:
+	case Token::identifier:
 		return parseIdentifierExpr();
-	case tok_numeric_constant:
+	case Token::numeric_constant:
 		return parseNumberExpr();
-	case tok_string_literal:
+	case Token::string_literal:
 		return parseStringExpr();
 	default:
 		return error(diag, token, Diagnostic::ExpectedExpression);
@@ -628,15 +628,15 @@ Parser::parsePrimaryExpr()
 uptr<tree::Expression>
 Parser::parseParenExpr()
 {
-	if (!match(tok_l_paren))
+	if (!match(Token::l_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_l_paren);
+		             token.data(), Token::l_paren);
 
 	uptr<tree::Expression> expr = parseExpression();
 
-	if (!match(tok_r_paren))
+	if (!match(Token::r_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_r_paren);
+		             token.data(), Token::r_paren);
 
 	return expr;
 }
@@ -671,7 +671,7 @@ Parser::parseBinaryExpr(uptr<tree::Expression> LHS,
 		}
 
 		LHS = std::make_unique<tree::BinaryExpr>(
-		       opcode.getType(), std::move(LHS), std::move(RHS));
+		       opcode.type(), std::move(LHS), std::move(RHS));
 	}
 }
 
@@ -689,26 +689,26 @@ Parser::parseUnaryExpr()
 		return nullptr;
 
 	return std::make_unique<tree::UnaryExpr>(
-	        opcode.getType(), std::move(operand));
+	        opcode.type(), std::move(operand));
 }
 
 uptr<tree::Expression>
 Parser::parseIdentifierExpr()
 {
-	std::string name = token.getData();
+	std::string name = token.data();
 
 	getNextToken(); // consume identifier
-	if (match(tok_l_paren))
+	if (match(Token::l_paren))
 		return parseCallExpr(name);
 
 	uptr<tree::Expression> id_expr;
-	if (match(tok_dot)) {
+	if (match(Token::dot)) {
 		id_expr = parseFieldAccess(name);
 	} else { 
 		id_expr = std::make_unique<tree::IdentifierExpr>(name);
 	}
 
-	if (match(tok_l_bracket)) {
+	if (match(Token::l_bracket)) {
 		id_expr = parseArraySubscript(std::move(id_expr));
 	}
 
@@ -722,7 +722,7 @@ Parser::parseCallExpr(std::string func)
 {
 	std::vector<uptr<tree::Expression>> args;
 
-	if (!match(tok_r_paren)) {
+	if (!match(Token::r_paren)) {
 		while (true) {
 			auto arg = parseExpression();
 
@@ -731,13 +731,13 @@ Parser::parseCallExpr(std::string func)
 
 			args.push_back(std::move(arg));
 
-			if (match(tok_r_paren))
+			if (match(Token::r_paren))
 				break;
 
-			if (!match(tok_comma))
+			if (!match(Token::comma))
 				return error(diag, token,
 				             Diagnostic::UnexpectedToken2,
-				             token.getData(), tok_comma);
+				             token.data(), Token::comma);
 		}
 	}
 
@@ -752,9 +752,9 @@ Parser::parseArraySubscript(uptr<tree::Expression> array)
 	if (!arg)
 		return nullptr;
 
-	if (!match(tok_r_bracket))
+	if (!match(Token::r_bracket))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
-		             token.getData(), tok_r_bracket);
+		             token.data(), Token::r_bracket);
 
 	return std::make_unique<tree::SubscriptExpr>(
 	                std::move(array), std::move(arg));
@@ -765,9 +765,9 @@ Parser::parseFieldAccess(std::string id)
 {
 	if (!isIdentifier(token))
 		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.getData(), "identifier");
+		             token.data(), "identifier");
 
-	std::string field = token.getData();
+	std::string field = token.data();
 
 	getNextToken(); // consume identifier
 
@@ -777,25 +777,25 @@ Parser::parseFieldAccess(std::string id)
 uptr<tree::Expression>
 Parser::parseStringExpr()
 {
-	assert(token == tok_string_literal);
+	assert(token == Token::string_literal);
 
 	Token tok = token;
 	// Consume string
 	getNextToken();
 
-	return std::make_unique<tree::StringExpr>(tok.getData());
+	return std::make_unique<tree::StringExpr>(tok.data());
 }
 
 uptr<tree::Expression>
 Parser::parseNumberExpr()
 {
-	assert(token == tok_numeric_constant);
+	assert(token == Token::numeric_constant);
 
 	// store token, because we need to consume it
 	Token tok = token;
 	// consume number
 	getNextToken();
 
-	return std::make_unique<tree::NumberExpr>(tok.getData());
+	return std::make_unique<tree::NumberExpr>(tok.data());
 }
 } // namespace hrscript

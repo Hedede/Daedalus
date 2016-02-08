@@ -12,16 +12,6 @@
 #include <string>
 #include <daedalus/common/types.h>
 namespace daedalus {
-enum TokenType {
-#define TOKEN(x) tok_ ## x,
-#define PUNCT(x, y) TOKEN(x)
-#define KEYWORD(x) kw_ ## x,
-#include <daedalus/lexer/TokenDef.h>
-#undef TOKEN
-#undef PUNCT
-#undef KEYWORD
-};
-
 struct Location {
 	Location() = default;
 	Location(size_t offset)
@@ -34,24 +24,38 @@ struct Location {
 
 class Token {
 public:
+	/*!
+	 * Enumeration of all token kinds,
+	 * All kinds are defined if TokenDef.h
+	 */
+	enum Kind {
+#define TOKEN(x) x,
+#define PUNCT(x, y) TOKEN(x)
+#define KEYWORD(x) kw_ ## x,
+#include <daedalus/lexer/TokenDef.h>
+#undef TOKEN
+#undef PUNCT
+#undef KEYWORD
+	};
+
 	// TODO: Illegal
-	Token() : kind(tok_illegal) { }
+	Token() : kind(Token::illegal) { }
 	Token(char const* start, char const* end)
 		: start(start), end(end)
 	{
 	}
 
-	TokenType getType() const
+	Kind type() const
 	{
-		return type;
+		return kind;
 	}
 	
-	void setType(TokenType newType)
+	void setType(Kind newKind)
 	{
-		type = newType;
+		kind = newKind;
 	}
 
-	std::string getData() const
+	std::string data() const
 	{
 		return std::string(start, end);
 	}
@@ -72,7 +76,7 @@ public:
 		return loc;
 	}
 private:
-	TokenType type;
+	Kind kind;
 	char const* start;
 	char const* end;
 	Location loc;
@@ -80,12 +84,13 @@ private:
 
 inline bool isIdentifier(Token tok)
 {
-	return tok.getType() == tok_identifier;
+	// TODO: Identifier
+	return tok.type() == Token::identifier;
 }
 
-inline bool operator == (Token tok, TokenType kind)
+inline bool operator == (Token tok, Token::Kind kind)
 {
-	return tok.getType() == kind;
+	return tok.type() == kind;
 }
 } // namespace daedalus
 #endif//Daedalus_Lexer_Token

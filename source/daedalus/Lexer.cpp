@@ -28,27 +28,27 @@ Lexer::Lexer(SourceBuffer* inputBuffer)
 {
 	// Setup keywords
 	kwmap
-	.add("const", kw_const)
-	.add("var",   kw_var)
-	.add("func",  kw_func)
-	.add("if",    kw_if)
-	.add("else",  kw_else)
-	.add("class", kw_class)
-	.add("prototype", kw_prototype)
-	.add("instance",  kw_instance)
-	.add("return", kw_return)
-	.add("void",   kw_void)
-	.add("float",  kw_float)
-	.add("int",    kw_int)
-	.add("string", kw_string);
+	.add("const", Token::kw_const)
+	.add("var",   Token::kw_var)
+	.add("func",  Token::kw_func)
+	.add("if",    Token::kw_if)
+	.add("else",  Token::kw_else)
+	.add("class", Token::kw_class)
+	.add("prototype", Token::kw_prototype)
+	.add("instance",  Token::kw_instance)
+	.add("return", Token::kw_return)
+	.add("void",   Token::kw_void)
+	.add("float",  Token::kw_float)
+	.add("int",    Token::kw_int)
+	.add("string", Token::kw_string);
 
 	if (EnableWhileStatements)
 	kwmap
-	.add("while",  kw_while)
-	.add("do",     kw_do)
-	.add("extern", kw_extern)
-	.add("break",  kw_break)
-	.add("continue", kw_continue);
+	.add("while",  Token::kw_while)
+	.add("do",     Token::kw_do)
+	.add("extern", Token::kw_extern)
+	.add("break",  Token::kw_break)
+	.add("continue", Token::kw_continue);
 
 	cur = buf->begin();
 
@@ -92,7 +92,7 @@ bool Lexer::lexIdentifier(Token& token)
 	auto kind = kwmap.get(id);
 
 	if (!kind)
-		kind = tok_identifier;
+		kind = Token::identifier;
 
 	token.setType(kind);
 	token.setData(start, cur);
@@ -121,7 +121,7 @@ bool Lexer::lexNumericConstant(Token& token)
 	}
 
 	token.setData(start, cur);
-	token.setType(tok_numeric_constant);
+	token.setType(Token::numeric_constant);
 
 	return true;
 }
@@ -137,7 +137,7 @@ bool Lexer::lexStringLiteral(Token& token)
 	}
 
 	token.setData(start, cur);
-	token.setType(tok_string_literal);
+	token.setType(Token::string_literal);
 
 	++cur; // consume '"'
 	return true;
@@ -152,7 +152,7 @@ bool Lexer::lexIllegalToken(Token& token)
 	}
 
 	token.setData(begin, cur);
-	token.setType(tok_illegal);
+	token.setType(Token::illegal);
 
 	return true;
 }
@@ -208,10 +208,10 @@ bool Lexer::lexCommentToken(Token& tok)
 	char const* start = cur + 2;
 	++ cur;
 	if (*cur == '*') {
-		tok.setType(tok_block_comment);
+		tok.setType(Token::block_comment);
 		skipBlockComment();
 	} else if (*cur == '/') {
-		tok.setType(tok_line_comment);
+		tok.setType(Token::line_comment);
 		skipBlockComment();
 	}
 	char const* end = cur;
@@ -235,7 +235,7 @@ lexNextToken:
 
 	switch (*cur) {
 	case 0:
-		tok.setType(tok_eof);
+		tok.setType(Token::eof);
 		return true;
 	/* Numeric constants */
 	// case '0' ... '9'
@@ -262,73 +262,73 @@ lexNextToken:
 		return lexIdentifier(tok);
 	/* Operators */
 	case '^':
-		tok.setType(tok_caret);
+		tok.setType(Token::caret);
 		break;
 	case '~':
-		tok.setType(tok_tilde);
+		tok.setType(Token::tilde);
 		break;
 	case ',':
-		tok.setType(tok_comma);
+		tok.setType(Token::comma);
 		break;
 	case '.':
-		tok.setType(tok_dot);
+		tok.setType(Token::dot);
 		break;
 	case ';':
-		tok.setType(tok_semicolon);
+		tok.setType(Token::semicolon);
 		break;
 	case '%':
-		tok.setType(tok_percent);
+		tok.setType(Token::percent);
 		break;
 	case '{':
-		tok.setType(tok_l_brace);
+		tok.setType(Token::l_brace);
 		break;
 	case '}':
-		tok.setType(tok_r_brace);
+		tok.setType(Token::r_brace);
 		break;
 	case '[':
-		tok.setType(tok_l_bracket);
+		tok.setType(Token::l_bracket);
 		break;
 	case ']':
-		tok.setType(tok_r_bracket);
+		tok.setType(Token::r_bracket);
 		break;
 	case '(':
-		tok.setType(tok_l_paren);
+		tok.setType(Token::l_paren);
 		break;
 	case ')':
-		tok.setType(tok_r_paren);
+		tok.setType(Token::r_paren);
 		break;
 	case '&':
 		if (peek() == '&') {
-			tok.setType(tok_amp_amp);
+			tok.setType(Token::amp_amp);
 			++cur;
 		} else {
-			tok.setType(tok_amp);	
+			tok.setType(Token::amp);
 		}
 		// TODO: does daedalus have '&=' operator?
 		break;
 	case '|':
 		if (peek() == '|') {
-			tok.setType(tok_pipe_pipe);
+			tok.setType(Token::pipe_pipe);
 			++cur;
 		} else {
-			tok.setType(tok_pipe);
+			tok.setType(Token::pipe);
 		}
 		// TODO: does daedalus have '|= operator?
 		break;
 	case '!':
 		if (peek() == '=') {
-			tok.setType(tok_bang_equal);
+			tok.setType(Token::bang_equal);
 			++cur;
 		} else {
-			tok.setType(tok_bang);
+			tok.setType(Token::bang);
 		}
 		break;
 	case '*':
 		if (peek() == '=') {
-			tok.setType(tok_ast_equal);
+			tok.setType(Token::ast_equal);
 			++ cur;
 		} else {
-			tok.setType(tok_ast);
+			tok.setType(Token::ast);
 		}
 		break;
 	case '/':
@@ -344,10 +344,10 @@ lexNextToken:
 		}
 
 		if (peek() == '=') {
-			tok.setType(tok_slash_equal);
+			tok.setType(Token::slash_equal);
 			++cur;
 		} else {
-			tok.setType(tok_slash);
+			tok.setType(Token::slash);
 		}
 
 		if (!keep_comments)
@@ -358,54 +358,54 @@ lexNextToken:
 		break;
 	case '=':
 		if (peek() == '=') {
-			tok.setType(tok_equal_equal);
+			tok.setType(Token::equal_equal);
 			++cur;
 		} else {
-			tok.setType(tok_equal);
+			tok.setType(Token::equal);
 		}
 		break;
 	case '+':
 		if (peek() == '+') {
-			tok.setType(tok_plus_plus);
+			tok.setType(Token::plus_plus);
 			++cur;
 		} else if (peek() == '=') {
-			tok.setType(tok_plus_equal);
+			tok.setType(Token::plus_equal);
 			++cur;
 		} else {
-			tok.setType(tok_plus);
+			tok.setType(Token::plus);
 		}
 		break;
 	case '-':
 		if (peek() == '-') {
-			tok.setType(tok_minus_minus);
+			tok.setType(Token::minus_minus);
 			++cur;
 		} else if (peek() == '=') {
-			tok.setType(tok_minus_equal);
+			tok.setType(Token::minus_equal);
 			++cur;
 		} else {
-			tok.setType(tok_minus);
+			tok.setType(Token::minus);
 		}
 		break;
 	case '<':
 		if (peek() == '<') {
-			tok.setType(tok_less_less);
+			tok.setType(Token::less_less);
 			++cur;
 		} else if (peek() == '=') {
-			tok.setType(tok_less_equal);
+			tok.setType(Token::less_equal);
 			++cur;
 		} else {
-			tok.setType(tok_less);
+			tok.setType(Token::less);
 		}
 		break;
 	case '>':
 		if (peek() == '>') {
-			tok.setType(tok_greater_greater);
+			tok.setType(Token::greater_greater);
 			++cur;
 		} else if (peek() == '=') {
-			tok.setType(tok_less_equal);
+			tok.setType(Token::less_equal);
 			++cur;
 		} else {
-			tok.setType(tok_less);
+			tok.setType(Token::less);
 		}
 		break;
 	/* Illegal token */
