@@ -35,9 +35,6 @@ public:
 		: lexer(lexer), diag(diag)
 	{
 		token = lexer.currentToken();
-		if (token == Token::block_comment ||
-		    token == Token::line_comment)
-			getNextToken();
 	}
 
 	virtual ~Parser() = default;
@@ -52,11 +49,7 @@ public:
 	 */
 	Token getNextToken()
 	{
-		while (token == Token::block_comment ||
-		       token == Token::line_comment)
-			token = lexer.nextToken();
-
-		return token;
+		return token = lexer.nextToken();
 	}
 private:
 	/*! Current lookahead (peek) token. */
