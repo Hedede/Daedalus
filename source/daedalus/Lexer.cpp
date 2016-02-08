@@ -203,24 +203,6 @@ void Lexer::handleComment()
 	handleComment();
 }
 
-bool Lexer::lexCommentToken(Token& tok)
-{
-	char const* start = cur + 2;
-	++ cur;
-	if (*cur == '*') {
-		tok.setType(Token::block_comment);
-		skipBlockComment();
-	} else if (*cur == '/') {
-		tok.setType(Token::line_comment);
-		skipBlockComment();
-	}
-	char const* end = cur;
-	if (*cur)
-		 end -= 2;
-	tok.setData(start, end);
-	return true;
-}
-
 /*!
  * This function is an actual lexer implementation.
  * It reads characters from stream and produces tokens
@@ -333,15 +315,13 @@ lexNextToken:
 		break;
 	case '/':
 		// Look for comments first
-		if (!keep_comments) {
-			handleComment();
-			// Check what we have, after we're done with comments
-			// If we have '/', continue handling this case.
-			// If we have something different, restart lexer.
-			if (*cur != '/')
-				// We didn't lex anything, restart the lexer.
-				goto lexNextToken;
-		}
+		handleComment();
+		// Check what we have, after we're done with comments
+		// If we have '/', continue handling this case.
+		// If we have something different, restart lexer.
+		if (*cur != '/')
+			// We didn't lex anything, restart the lexer.
+			goto lexNextToken;
 
 		if (peek() == '=') {
 			tok.setType(Token::slash_equal);
@@ -349,12 +329,6 @@ lexNextToken:
 		} else {
 			tok.setType(Token::slash);
 		}
-
-		if (!keep_comments)
-			break;
-
-		if (peek() == '/' || peek() == '*')
-			return lexCommentToken(tok);
 		break;
 	case '=':
 		if (peek() == '=') {
