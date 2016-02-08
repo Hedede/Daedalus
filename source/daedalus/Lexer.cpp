@@ -176,47 +176,36 @@ void Lexer::skipBlockComment()
 		if (*cur == 0)
 			break;
 
-		char const* prev = cur - 1;
+		char const* prev = cur++ - 1;
 		if (*prev == '*')
 			break;
 	}
 }
 
-void Lexer::handleComment()
-{
-	char p = peek();
-	if (p == '*') {
-		skipBlockComment();
-	} else if (p == '/') {
-		skipLineComment();
-	} else {
-		// Not a comment - we're done.
-		return;
-	}
-	
-	// Instead of going through everything again, we do everything here.
-	// Skip whitespace and check for more comments
-	++cur;
-	while(isspace(*cur))
-		++cur;
-
-	handleComment();
-}
-
-bool Lexer::lexCommentToken(Token& tok)
+bool Lexer::lexBlockComment(Token& tok)
 {
 	char const* start = cur + 2;
 	++ cur;
-	if (*cur == '*') {
-		tok.setType(Token::block_comment);
-		skipBlockComment();
-	} else if (*cur == '/') {
-		tok.setType(Token::line_comment);
-		skipBlockComment();
-	}
+	assert(*cur == '*');
+
+	skipBlockComment();
 	char const* end = cur;
 	if (*cur)
 		 end -= 2;
+
+	tok.setType(Token::block_comment);
+	tok.setData(start, end);
+	return true;
+}
+
+bool Lexer::lexLineComment(Token& tok)
+{
+	char const* start = cur + 2;
+	++ cur;
+	assert(*cur == '/');
+	skipLineComment();
+	char const* end = cur - 1;
+	tok.setType(Token::line_comment);
 	tok.setData(start, end);
 	return true;
 }
@@ -227,7 +216,6 @@ bool Lexer::lexCommentToken(Token& tok)
  */
 bool Lexer::lexNextToken(Token& tok)
 {
-lexNextToken:
 	while (isspace(*cur))
 		++cur;
 
@@ -332,29 +320,16 @@ lexNextToken:
 		}
 		break;
 	case '/':
-		// Look for comments first
-		if (!keep_comments) {
-			handleComment();
-			// Check what we have, after we're done with comments
-			// If we have '/', continue handling this case.
-			// If we have something different, restart lexer.
-			if (*cur != '/')
-				// We didn't lex anything, restart the lexer.
-				goto lexNextToken;
-		}
-
 		if (peek() == '=') {
 			tok.setType(Token::slash_equal);
 			++cur;
+		} else if (peek() == '/') {
+			return lexLineComment(tok);
+		} else if (peek() == '*') {
+			return lexBlockComment(tok);
 		} else {
 			tok.setType(Token::slash);
 		}
-
-		if (!keep_comments)
-			break;
-
-		if (peek() == '/' || peek() == '*')
-			return lexCommentToken(tok);
 		break;
 	case '=':
 		if (peek() == '=') {

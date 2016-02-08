@@ -42,9 +42,9 @@ private:
 
 	void skipLineComment();
 	void skipBlockComment();
-	void handleComment();
 
-	bool lexCommentToken(Token& tok);
+	bool lexBlockComment(Token& tok);
+	bool lexLineComment(Token& tok);
 
 	KeywordMap kwmap;
 	SourceBuffer* buf;
