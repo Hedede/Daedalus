@@ -7,7 +7,7 @@
  * There is NO WARRANTY, to the extent permitted by law.
  */
 #include <cassert>
-#include <map>
+#include <set>
 #include <string>
 #include <functional>
 #include <iostream>
@@ -15,13 +15,24 @@
 #include <daedalus/io/SourceBuffer.h>
 namespace daedalus {
 struct OutputUnit {
+	std::string name;
 	std::string soundFile;
 	std::string subtitle;
 };
 
+bool operator == (OutputUnit const& a, OutputUnit const& b)
+{
+	a.name == b.name;
+}
+
+bool operator < (OutputUnit const& a, OutputUnit const& b)
+{
+	a.name < b.name;
+}
+
 class OUParser {
 public:
-	typedef std::map<std::string, OutputUnit> OutputUnits;
+	typedef std::set<OutputUnit> OutputUnits;
 
 	OUParser(SourceBuffer& buf)
 		: buf(buf)
@@ -179,7 +190,7 @@ auto OUParser::loadOutputUnits() -> OutputUnits
 	return ou;
 }
 
-void OUParser::processAI_Output(OutputUnits& units)
+void OUParser::processAI_Output(OutputUnits& list)
 {
 	advance('(');
 	advance(',');
@@ -196,12 +207,13 @@ void OUParser::processAI_Output(OutputUnits& units)
 		return;
 	
 	OutputUnit ou;
+	ou.name = name;
 	ou.subtitle = readCommentText();
 	ou.soundFile = name + ".wav";
-	units[name] = ou;
+	list.insert(ou);
 }
 
-void OUParser::processSVMInstance(OutputUnits& units)
+void OUParser::processSVMInstance(OutputUnits& list)
 {
 	if (!advance_if(isalpha)) return;
 	advance('(');
@@ -229,9 +241,10 @@ void OUParser::processSVMInstance(OutputUnits& units)
 			return;
 
 		OutputUnit ou;
+		ou.name = name;
 		ou.subtitle = readCommentText();
 		ou.soundFile = name + ".wav";
-		units[name] = ou;
+		list.insert(ou);
 	};
 }
 
@@ -247,7 +260,7 @@ int main(char** argv)
 
 	std::cout << argv[1] << std::endl;
 	for (auto& u : ou) {
-		std::cout << u.first << " = " << u.second.subtitle << std::endl;
+		std::cout << u.name << " = " << u.subtitle << std::endl;
 	}
 
 	return 0;
