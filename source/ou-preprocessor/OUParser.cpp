@@ -7,68 +7,12 @@
  * There is NO WARRANTY, to the extent permitted by law.
  */
 #include <cassert>
-#include <set>
-#include <string>
-#include <functional>
-#include <iostream>
 #include <daedalus/utility/string.h>
-#include <daedalus/io/SourceBuffer.h>
+#include <daedalus/ou/Parser.h>
 namespace daedalus {
-struct OutputUnit {
-	std::string name;
-	std::string soundFile;
-	std::string subtitle;
-};
-
-bool operator == (OutputUnit const& a, OutputUnit const& b)
-{
-	a.name == b.name;
-}
-
-bool operator < (OutputUnit const& a, OutputUnit const& b)
-{
-	a.name < b.name;
-}
-
-class OUParser {
-public:
-	typedef std::set<OutputUnit> OutputUnits;
-
-	OUParser(SourceBuffer& buf)
-		: buf(buf)
-	{
-		cur = buf.begin();
-	}
-
-	OutputUnits loadOutputUnits();
-private:
-	template <class UnaryPredicate>
-	bool advance_if(UnaryPredicate predicate);
-	bool advance(char c);
-	template <class Unary1, class Unary2>
-	bool advance_if(Unary1 trueCond, Unary2 falseCond);
-	bool advance(char c, char e);
-	bool advance(std::string str);
-
-	void skipLineComment();
-	void skipBlockComment();
-	void skipComment();
-	void skipWhitespace();
-
-	std::string readWord();
-	std::string readCommentText();
-	std::string readString();
-
-	void processAI_Output(OutputUnits& units);
-	void processSVMInstance(OutputUnits& units);
-
-	SourceBuffer& buf;
-	char const* cur;
-	char const* end;
-};
-
+namespace ou {
 template <class UnaryPredicate>
-bool OUParser::advance_if(UnaryPredicate predicate)
+bool Parser::advance_if(UnaryPredicate predicate)
 {
 	for (; cur != end; ++cur) {
 		if (predicate(*cur))
@@ -77,13 +21,13 @@ bool OUParser::advance_if(UnaryPredicate predicate)
 	return false;
 }
 
-bool OUParser::advance(char c)
+bool Parser::advance(char c)
 {
 	return advance_if([c] (char x) {return x == c;});
 }
 
 template <class Unary1, class Unary2>
-bool OUParser::advance_if(Unary1 trueCond, Unary2 falseCond)
+bool Parser::advance_if(Unary1 trueCond, Unary2 falseCond)
 {
 	for (; cur != end; ++cur) {
 		if (trueCond(*cur))
@@ -94,13 +38,13 @@ bool OUParser::advance_if(Unary1 trueCond, Unary2 falseCond)
 	return false;
 }
 
-bool OUParser::advance(char c, char e)
+bool Parser::advance(char c, char e)
 {
 	return advance_if([c] (char x) {return x == c;},
 	              [e] (char x) {return x == e;});
 }
 
-bool OUParser::advance(std::string str)
+bool Parser::advance(std::string str)
 {
 	assert(!str.empty());
 
@@ -114,7 +58,7 @@ bool OUParser::advance(std::string str)
 	return true;
 }
 
-void OUParser::skipComment()
+void Parser::skipComment()
 {
 	++ cur;
 	if (*cur == '/') {
@@ -131,12 +75,12 @@ void OUParser::skipComment()
 	}
 }
 
-void OUParser::skipWhitespace()
+void Parser::skipWhitespace()
 {
 	advance_if([] (char x) {return !isspace(x);});
 }
 
-std::string OUParser::readWord()
+std::string Parser::readWord()
 {
 	auto* start = cur++;
 
@@ -145,7 +89,7 @@ std::string OUParser::readWord()
 	return std::string(start, cur);
 }
 
-std::string OUParser::readString()
+std::string Parser::readString()
 {
 	++cur; // skip "
 	std::string str;
@@ -157,16 +101,16 @@ std::string OUParser::readString()
 	return str;
 }
 
-std::string OUParser::readCommentText()
+std::string Parser::readCommentText()
 {
 	auto* start = cur;
 	advance('\n');
 	return std::string(start, cur);
 }
 
-auto OUParser::loadOutputUnits() -> OutputUnits
+OutputUnitList Parser::loadOutputUnits()
 {
-	OutputUnits ou;
+	OutputUnitList ou;
 
 	while (*cur) {
 		if (isalpha(*cur)) {
@@ -190,7 +134,7 @@ auto OUParser::loadOutputUnits() -> OutputUnits
 	return ou;
 }
 
-void OUParser::processAI_Output(OutputUnits& list)
+void Parser::processAI_Output(OutputUnitList& list)
 {
 	advance('(');
 	advance(',');
@@ -213,7 +157,7 @@ void OUParser::processAI_Output(OutputUnits& list)
 	list.insert(ou);
 }
 
-void OUParser::processSVMInstance(OutputUnits& list)
+void Parser::processSVMInstance(OutputUnitList& list)
 {
 	if (!advance_if(isalpha)) return;
 	advance('(');
@@ -247,27 +191,5 @@ void OUParser::processSVMInstance(OutputUnits& list)
 		list.insert(ou);
 	};
 }
-
-int main(char** argv)
-{
-	if (argv[1] == 0)
-		return 1;
-
-	ReadFile file(argv[1]);
-	SourceBuffer buffer(file);
-	OUParser parser(buffer);
-	auto ou = parser.loadOutputUnits();
-
-	std::cout << argv[1] << std::endl;
-	for (auto& u : ou) {
-		std::cout << u.name << " = " << u.subtitle << std::endl;
-	}
-
-	return 0;
-}
+} // namespace ou
 } // namespace daedalus
-
-int main(int, char** argv)
-{
-	return daedalus::main(argv);
-}
