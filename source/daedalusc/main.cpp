@@ -13,7 +13,7 @@
 #include <daedalus/utility/Printer.h>
 #include <daedalus/utility/DiagnosticHelper.h>
 #include <daedalus/parser/Parser.h>
-
+#include "OUGen.h"
 namespace daedalus {
 class TestWriteStream : public io::WriteStream {
 public:
@@ -40,6 +40,7 @@ int main(char** argv)
 	if (argv[1] == 0)
 		return 1;
 
+	std::cout << argv[1] << std::endl;
 	ReadFile file(argv[1]);
 	SourceBuffer buffer(file);
 	Lexer lexer(&buffer);
@@ -48,18 +49,25 @@ int main(char** argv)
 
 	TestWriteStream out;
 	Printer printer(out);
+	std::vector<uptr<tree::Declaration>> decls;
 	auto decl = parser.parseDeclaration();
 	while (decl) {
 		decl->accept(printer);
+		decls.push_back(std::move(decl));
 		decl = parser.parseDeclaration();
 	}
+	//while (true);
 
 	return 0;
 }
-} // namespace
+} // namespace daedalus
 
 
 int main(int, char** argv)
 {
+	using namespace std::string_literals;
+	if (!argv[1]) return 1;
+	if (argv[1] == "-ou"s) return daedalus::ou_gen(argv+1);
+	if (argv[1] == "-dd"s) return daedalus::main(argv+1);
 	return daedalus::main(argv);
 }

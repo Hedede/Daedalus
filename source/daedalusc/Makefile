@@ -1,6 +1,6 @@
 RootPath = ../..
 Sources = Printer.cpp main.cpp
-Libraries = daedalus
+Libraries = daedalus daedalus-ou
 ProjectName = daedalusc
 Executable = true
 

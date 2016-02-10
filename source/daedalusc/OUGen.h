@@ -9,7 +9,7 @@
 #include <iostream>
 #include <daedalus/ou/Parser.h>
 namespace daedalus {
-int main(char** argv)
+int ou_gen(char** argv)
 {
 	if (argv[1] == 0)
 		return 1;
