@@ -25,11 +25,6 @@ public:
 	 * Extract next token from stream
 	 */
 	Token nextToken();
-
-	void keepComments(bool keep)
-	{
-		keep_comments = keep;
-	}
 private:
 	void init();
 	char peek();
@@ -51,7 +46,6 @@ private:
 
 	char const* cur;
 	Token cur_token;
-	bool keep_comments = false;
 };
 } // namespace daedalus
 #endif//Daedalus_Lexer
