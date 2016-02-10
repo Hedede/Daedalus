@@ -1,7 +1,7 @@
 RootPath = ../..
-Sources = OUParser.cpp
+Sources = Parser.cpp
 Libraries = daedalus
-ProjectName = oup
-Executable = true
+ProjectName = daedalus-ou
+Executable = false
 
 include $(RootPath)/Rules.mk

@@ -32,36 +32,28 @@ bool operator < (OutputUnit const& a, OutputUnit const& b)
 
 typedef std::set<OutputUnit> OutputUnitList;
 
-class OUParser {
+class Parser {
 public:
-
-	OUParser(SourceBuffer& buf)
+	Parser(SourceBuffer& buf)
 		: buf(buf)
 	{
 		cur = buf.begin();
+		end = buf.end();
 	}
 
-	OutputUnits loadOutputUnits();
+	OutputUnitList loadOutputUnits();
 private:
 	template <class UnaryPredicate>
 	bool advance_if(UnaryPredicate predicate);
 	bool advance(char c);
-	template <class Unary1, class Unary2>
-	bool advance_if(Unary1 trueCond, Unary2 falseCond);
-	bool advance(char c, char e);
-	bool advance(std::string str);
-
-	void skipLineComment();
-	void skipBlockComment();
-	void skipComment();
-	void skipWhitespace();
 
 	std::string readWord();
-	std::string readCommentText();
 	std::string readString();
 
-	void processAI_Output(OutputUnits& units);
-	void processSVMInstance(OutputUnits& units);
+	void processSubtitle(std::string name, OutputUnitList& list);
+	void processAI_Output(OutputUnitList& units);
+	void processSVMVar(OutputUnitList& units);
+	void processSVMInstance(OutputUnitList& units);
 
 	SourceBuffer& buf;
 	char const* cur;

@@ -7,14 +7,53 @@
  * There is NO WARRANTY, to the extent permitted by law.
  */
 #include <cassert>
+#include <algorithm>
 #include <daedalus/utility/string.h>
 #include <daedalus/ou/Parser.h>
 namespace daedalus {
 namespace ou {
-template <class UnaryPredicate>
-bool Parser::advance_if(UnaryPredicate predicate)
+namespace {
+char const* skipComment(char const* cur, char const* end)
 {
-	for (; cur != end; ++cur) {
+	++cur;
+	if (*cur == '/')
+		return std::find(cur, end, '\n');
+
+	if (*cur != '*')
+		return cur;
+
+	cur += 2;
+	while (true) {
+		cur = std::find(cur, end, '/');
+
+		if (cur == end)
+			return cur;
+
+		char const* prev = cur++ - 1;
+		if (*prev == '*')
+			return cur;
+	}
+}
+
+char const* skipJunk(char const* cur, char const* end)
+{
+	if (isspace(*cur))
+		return std::find_if_not(cur, end, isspace);
+
+	if (cur == end)
+		return cur;
+
+	if (*cur == '/')
+		return skipComment(cur, end);
+
+	return cur + 1;
+}
+} // namespace
+
+template <class Predicate>
+bool Parser::advance_if(Predicate predicate)
+{
+	for (; cur != end; cur = skipJunk(cur, end)) {
 		if (predicate(*cur))
 			return true;
 	}
@@ -23,61 +62,11 @@ bool Parser::advance_if(UnaryPredicate predicate)
 
 bool Parser::advance(char c)
 {
-	return advance_if([c] (char x) {return x == c;});
-}
-
-template <class Unary1, class Unary2>
-bool Parser::advance_if(Unary1 trueCond, Unary2 falseCond)
-{
-	for (; cur != end; ++cur) {
-		if (trueCond(*cur))
-			return true;
-		if (falseCond(*cur))
-			return false;
+	if (advance_if([c] (char x) {return x == c;})) {
+		++cur;
+		return true;
 	}
 	return false;
-}
-
-bool Parser::advance(char c, char e)
-{
-	return advance_if([c] (char x) {return x == c;},
-	              [e] (char x) {return x == e;});
-}
-
-bool Parser::advance(std::string str)
-{
-	assert(!str.empty());
-
-	if (!advance(str[0], '\n'))
-		return false;
-
-	for (char c : str) {
-		if (*cur++ != c) return false;
-	}
-
-	return true;
-}
-
-void Parser::skipComment()
-{
-	++ cur;
-	if (*cur == '/') {
-		advance('\n');
-	} else if (*cur == '*') {
-		while (true) {
-			if (!advance('/'))
-				break;
-
-			char const* prev = cur++ - 1;
-			if (*prev == '*')
-				break;
-		}
-	}
-}
-
-void Parser::skipWhitespace()
-{
-	advance_if([] (char x) {return !isspace(x);});
 }
 
 std::string Parser::readWord()
@@ -91,21 +80,16 @@ std::string Parser::readWord()
 
 std::string Parser::readString()
 {
-	++cur; // skip "
 	std::string str;
-	while (*cur && *cur != '"') {
+	for (; cur != end; ++cur) {
+		if (*cur == '"')
+			break;
 		if (*cur == '\\')
 			++cur;
-		str += *cur++;
+		str += *cur;
 	}
+	++ cur; // skip '"'
 	return str;
-}
-
-std::string Parser::readCommentText()
-{
-	auto* start = cur;
-	advance('\n');
-	return std::string(start, cur);
 }
 
 OutputUnitList Parser::loadOutputUnits()
@@ -113,25 +97,37 @@ OutputUnitList Parser::loadOutputUnits()
 	OutputUnitList ou;
 
 	while (*cur) {
-		if (isalpha(*cur)) {
-			std::string id = readWord();
-			string::tolower(id);
+		advance_if(isalpha);
+		std::string id = readWord();
+		string::tolower(id);
 
-			if (id == "ai_output") {
-				processAI_Output(ou);
-			} else if (id == "instance") {
-				processSVMInstance(ou);
-			}
-		} else if (isspace(*cur)) {
-			skipWhitespace();
-		} else if (*cur == '/') {
-			skipComment();
-		} else {
-			++cur;
+		if (id == "ai_output") {
+			processAI_Output(ou);
+		} else if (id == "instance") {
+			processSVMInstance(ou);
 		}
 	}
 
 	return ou;
+}
+
+void Parser::processSubtitle(std::string name, OutputUnitList& list)
+{
+	cur = std::find_if_not(cur, end, isspace);
+
+	if (*cur++ != '/') return;
+	if (*cur++ != '/') return;
+
+	auto start = std::find_if_not(cur, end, isspace);
+	cur = std::find(start, end, '\n');
+
+	auto comment = std::string(start, cur);
+
+	OutputUnit ou;
+	ou.name = name;
+	ou.subtitle = comment;
+	ou.soundFile = name + ".wav";
+	list.insert(ou);
 }
 
 void Parser::processAI_Output(OutputUnitList& list)
@@ -147,48 +143,42 @@ void Parser::processAI_Output(OutputUnitList& list)
 	advance(')');
 	advance(';');
 
-	if (!advance("//"))
-		return;
-	
-	OutputUnit ou;
-	ou.name = name;
-	ou.subtitle = readCommentText();
-	ou.soundFile = name + ".wav";
-	list.insert(ou);
+	processSubtitle(name, list);
+}
+
+void Parser::processSVMVar(OutputUnitList& list)
+{
+	if (!advance_if(isalpha)) return;
+	if (!advance('=')) return;
+	if (!advance('"')) return;
+
+	auto name = readString();
+
+	advance(';');
+	processSubtitle(name, list);
 }
 
 void Parser::processSVMInstance(OutputUnitList& list)
 {
 	if (!advance_if(isalpha)) return;
 	advance('(');
-	if (!advance("C_SVM")) return;
+	advance_if(isalpha);
+
+	if (readWord() != "C_SVM") {
+		// Hopefully, nobody puts AI_Output inside instances
+		advance('}');
+		return;
+	}
+
 	advance(')');
+
 	if (!advance('{')) return;
-	
+
 	while (*cur) {
-		if (isspace(*cur))
-			skipWhitespace();
-
-		if (*cur == '/')
-			skipComment();
-
-		if (*cur == '}') break;
-
-		if (!advance_if(isalpha)) return;
-		if (!advance('=')) return;
-		if (!advance('"')) return;
-
-		auto name = readString();
-
-		advance(';');
-		if (!advance("//"))
-			return;
-
-		OutputUnit ou;
-		ou.name = name;
-		ou.subtitle = readCommentText();
-		ou.soundFile = name + ".wav";
-		list.insert(ou);
+		processSVMVar(list);
+		cur = skipJunk(cur, end);
+		if (*cur == '}')
+			break;
 	};
 }
 } // namespace ou
