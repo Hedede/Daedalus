@@ -35,7 +35,6 @@ private:
 	bool lexNumericConstant(Token& token);
 	bool lexNextToken(Token& token);
 
-	void skipLineComment();
 	void skipBlockComment();
 	void handleComment();
 
@@ -45,6 +44,8 @@ private:
 	SourceBuffer* buf;
 
 	char const* cur;
+	char const* end;
+
 	Token cur_token;
 };
 } // namespace daedalus

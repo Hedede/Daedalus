@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <daedalus/common/types.h>
 #include <daedalus/lexer/Lexer.h>
+#include "CharType.h"
 namespace daedalus {
 namespace {
 bool in (char c, char c1)
@@ -52,6 +53,7 @@ Lexer::Lexer(SourceBuffer* inputBuffer)
 	.add("continue", Token::kw_continue);
 
 	cur = buf->begin();
+	end = buf->end();
 
 	// Extract first token
 	nextToken();
@@ -83,9 +85,7 @@ char Lexer::peek()
 bool Lexer::lexIdentifier(Token& token)
 {
 	char const* start = cur;
-	while (isalnum(*cur) || in(*cur, '_', '^', '@')) {
-		++ cur;
-	}
+	cur = std::find_if_not(cur, end, isNameChar);
 
 	std::string id(start, cur);
 
@@ -105,20 +105,14 @@ bool Lexer::lexNumericConstant(Token& token)
 {
 	char const* start = cur;
 
-	while (isalnum(*cur))
-		++cur;
+	cur = std::find_if_not(cur, end, isalnum);
 
 	if (*cur == '.') {
-		do {
-			++cur;
-		} while (isalnum(*cur));
+		cur = std::find_if_not(cur+1, end, isalnum);
 
 		char const* prev = cur - 1;
-		if (in(*cur, '-', '+') && in(*prev, 'e', 'E')) {
-			do {
-				++cur;
-			} while (isalnum(*cur));
-		}
+		if (in(*cur, '-', '+') && in(*prev, 'e', 'E'))
+			cur = std::find_if_not(cur, end, isalnum);
 	}
 
 	token.setData(start, cur);
@@ -131,16 +125,18 @@ bool Lexer::lexStringLiteral(Token& token)
 {
 	char const* start = cur;
 	while (*cur != '"') {
-		if (*cur == '\\') {
+		cur = std::find(cur, end, '"');
+		char const* prev = cur - 1;
+		if (prev == '\\')
 			++cur;
-		}
-		++cur;
 	}
 
+	// TODO: incomplete flag if cur == end
 	token.setData(start, cur);
 	token.setType(Token::string_literal);
 
-	++cur; // consume '"'
+	if (cur < end)
+		++cur; // consume '"'
 	return true;
 }
 
@@ -148,17 +144,12 @@ bool Lexer::lexIllegalToken(Token& token)
 {
 	char const* begin = cur;
 	// TODO: search until token-beginnning character
-	cur = std::find_if(begin, std::end(*buf), isspace);
+	cur = std::find_if(begin, end, isspace);
 
 	token.setData(begin, cur);
 	token.setType(Token::illegal);
 
 	return true;
-}
-
-void Lexer::skipLineComment()
-{
-	cur = std::find(cur, std::end(*buf), '\n');
 }
 
 void Lexer::skipBlockComment()
@@ -172,9 +163,9 @@ void Lexer::skipBlockComment()
 	cur += 3;
 
 	while (true) {
-		cur = std::find(cur, std::end(*buf), '/');
+		cur = std::find(cur, end, '/');
 
-		if (cur == std::end(*buf))
+		if (cur == end)
 			break;
 
 		char const* prev = cur - 1;
@@ -188,9 +179,11 @@ void Lexer::handleComment()
 {
 	char p = peek();
 	if (p == '*') {
+		/* Skip block comment */
 		skipBlockComment();
 	} else if (p == '/') {
-		skipLineComment();
+		// Skip line comment
+		cur = std::find(cur, end, '\n');
 	} else {
 		// Not a comment - we're done.
 		return;
@@ -198,9 +191,7 @@ void Lexer::handleComment()
 	
 	// Instead of going through everything again, we do everything here.
 	// Skip whitespace and check for more comments
-	++cur;
-	while(isspace(*cur))
-		++cur;
+	cur = std::find_if_not(cur+1, end, isspace);
 
 	if (*cur == '/')
 		handleComment();
@@ -213,8 +204,7 @@ void Lexer::handleComment()
 bool Lexer::lexNextToken(Token& tok)
 {
 lexNextToken:
-	while (isspace(*cur))
-		++cur;
+	cur = std::find_if_not(cur, end, isspace);
 
 	char const* tok_start = cur;
 
