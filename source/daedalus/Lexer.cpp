@@ -199,7 +199,8 @@ void Lexer::handleComment()
 	while(isspace(*cur))
 		++cur;
 
-	handleComment();
+	if (*cur == '/')
+		handleComment();
 }
 
 /*!
