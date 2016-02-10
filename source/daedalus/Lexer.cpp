@@ -6,6 +6,7 @@
  * This is free software: you are free to change and redistribute it.
  * There is NO WARRANTY, to the extent permitted by law.
  */
+#include <algorithm>
 #include <daedalus/common/types.h>
 #include <daedalus/lexer/Lexer.h>
 namespace daedalus {
@@ -147,9 +148,7 @@ bool Lexer::lexIllegalToken(Token& token)
 {
 	char const* begin = cur;
 	// TODO: search until token-beginnning character
-	while (!isspace(*cur)) {
-		++cur;
-	}
+	cur = std::find_if(begin, std::end(*buf), isspace);
 
 	token.setData(begin, cur);
 	token.setType(Token::illegal);
@@ -159,21 +158,15 @@ bool Lexer::lexIllegalToken(Token& token)
 
 void Lexer::skipLineComment()
 {
-	// crude comment handling
-	do {
-		++cur;
-	} while (*cur != '\n');
+	cur = std::find(cur, std::end(*buf), '\n');
 }
 
 void Lexer::skipBlockComment()
 {
 	while (true) {
-		// TODO: Inefficient! Check multiple chars at once
-		do {
-			++cur;
-		} while (*cur != '/' && *cur != 0);
+		cur = std::find(cur+1, std::end(*buf), '/');
 
-		if (*cur == 0)
+		if (cur == std::end(*buf))
 			break;
 
 		char const* prev = cur - 1;
