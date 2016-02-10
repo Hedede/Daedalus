@@ -24,12 +24,15 @@ public:
 		
 		length = file.size();
 
-		buffer = new char[length];
+		buffer = new char[length + 1];
 
 		diff_t res = file.read(buffer, length);
 
 		if (res < 0)
 			free();
+
+		// Sentinel
+		buffer[length+1] = 0;
 	}
 
 	~SourceBuffer()
