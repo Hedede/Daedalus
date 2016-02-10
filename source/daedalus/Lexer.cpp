@@ -163,10 +163,13 @@ void Lexer::skipLineComment()
 
 void Lexer::skipBlockComment()
 {
-	// skip “/*”
-	cur += 2;
-	// Don't stop if somment starts with “/*/”
-	if (*cur == '/') ++cur;
+	// Skip ‘/* ’.
+	// Third character:
+	// - If it is '/', then it needs to be skipped or ‘/*/’
+	// would be handled incorrectly
+	// - If it is anything else, then it doesn't matter and
+	// ca be skipped in any case.
+	cur += 3;
 
 	while (true) {
 		cur = std::find(cur, std::end(*buf), '/');
