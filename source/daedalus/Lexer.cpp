@@ -77,9 +77,15 @@ Token Lexer::nextToken()
 	return currentToken();
 }
 
-char Lexer::peek()
+char Lexer::peek() const
 {
 	return (cur < end) ? *(cur + 1) : 0;
+}
+
+char Lexer::prev() const
+{
+	assert(cur > std::begin(*buf));
+	return *(cur - 1);
 }
 
 bool Lexer::lexIdentifier(Token& token)
@@ -110,8 +116,7 @@ bool Lexer::lexNumericConstant(Token& token)
 	if (*cur == '.') {
 		cur = std::find_if_not(cur+1, end, isalnum);
 
-		char const* prev = cur - 1;
-		if (in(*cur, '-', '+') && in(*prev, 'e', 'E'))
+		if (in(*cur, '-', '+') && in(prev(), 'e', 'E'))
 			cur = std::find_if_not(cur, end, isalnum);
 	}
 
@@ -126,8 +131,7 @@ bool Lexer::lexStringLiteral(Token& token)
 	char const* start = cur;
 	while (*cur != '"') {
 		cur = std::find(cur, end, '"');
-		char const* prev = cur - 1;
-		if (prev == '\\')
+		if (prev() == '\\')
 			++cur;
 	}
 
@@ -168,8 +172,7 @@ void Lexer::skipBlockComment()
 		if (cur == end)
 			break;
 
-		char const* prev = cur - 1;
-		if (*prev == '*')
+		if (prev() == '*')
 			break;
 		++cur;
 	}

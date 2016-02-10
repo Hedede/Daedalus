@@ -27,7 +27,8 @@ public:
 	Token nextToken();
 private:
 	void init();
-	char peek();
+	char peek() const;
+	char prev() const;
 
 	bool lexIllegalToken(Token& token);
 	bool lexIdentifier(Token& token);
