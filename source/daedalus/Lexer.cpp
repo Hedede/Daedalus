@@ -79,7 +79,7 @@ Token Lexer::nextToken()
 
 char Lexer::peek()
 {
-	return *(cur + 1);
+	return (cur < end) ? *(cur + 1) : 0;
 }
 
 bool Lexer::lexIdentifier(Token& token)
