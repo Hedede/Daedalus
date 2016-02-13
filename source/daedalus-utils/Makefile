@@ -1,5 +1,6 @@
 RootPath = ../..
-Sources = compose.cpp
+Sources = compose.cpp Worker.cpp
+Libraries = pthread
 ProjectName = daedl-utils
 Executable = false
 
