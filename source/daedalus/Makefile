@@ -1,5 +1,6 @@
 RootPath = ../..
-Sources = compose.cpp File.cpp KeywordMap.cpp Lexer.cpp Parser.cpp
+Sources = File.cpp KeywordMap.cpp Lexer.cpp Parser.cpp
+Libraries = daedl-utils
 ProjectName = daedalus
 Executable = false
 
