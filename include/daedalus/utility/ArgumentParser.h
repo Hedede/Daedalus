@@ -52,7 +52,7 @@ struct Argument {
 /*!
  * Parses program arguments using POSIX syntax.
  */
-class AW_CORE_EXP ArgumentParser {
+class ArgumentParser {
 public:
 	ArgumentParser(char const* const* argv);
 
