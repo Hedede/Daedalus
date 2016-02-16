@@ -74,7 +74,7 @@ PRINTF_RED  =$(PRINTF) '\033[31m'
 PRINTF_RESET=$(PRINTF) '\033[0m'
 
 # Build rules
-all: debug install
+all: debug
 
 .PHONY: debug
 debug: CXXFLAGS+=$(CXXFLAGS_DEBUG)
