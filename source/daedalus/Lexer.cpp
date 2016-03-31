@@ -131,6 +131,8 @@ bool Lexer::lexStringLiteral(Token& token)
 	char const* start = cur;
 	while (*cur != '"') {
 		cur = std::find(cur, end, '"');
+		if (cur == end)
+			break;
 		if (prev() == '\\')
 			++cur;
 	}
