@@ -1,6 +1,6 @@
 RootPath = ../..
 Sources = File.cpp KeywordMap.cpp Lexer.cpp Parser.cpp ou/Parser.cpp
-Libraries = daedl-utils
+Libraries = awutils awstring
 ProjectName = daedalus
 Executable = false
 

@@ -1,6 +1,6 @@
 RootPath = ../..
 Sources = Printer.cpp main.cpp
-Libraries = daedalus daedl-utils
+Libraries = awstring awutils daedalus
 ProjectName = ddlc
 Executable = true
 

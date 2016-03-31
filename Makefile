@@ -1,9 +1,6 @@
 all: daedalus daedalusc
 
-daedalus-utils:
-	@ $(MAKE) -C 'source/daedalus-utils' $(target)
-
-daedalus: daedalus-utils
+daedalus:
 	@ $(MAKE) -C 'source/daedalus' $(target)
 
 daedalusc:
