@@ -42,7 +42,7 @@ protected:
 	}
 
 private:
-	Kind kind;
+	Kind const kind;
 };
 
 typedef std::vector<uptr<Declaration>> DeclarationList;
