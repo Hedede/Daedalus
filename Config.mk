@@ -1,4 +1,4 @@
-CONFIG_INCLUDE_PATHS = 
+CONFIG_INCLUDE_PATHS = ../awlib/include
 CONFIG_LIBRARY_PATHS = 
 CONFIG_MAKE_DEPENDS  = false
 # "mingw" or "default" (empty)
