@@ -51,12 +51,10 @@ class Expression;
 
 class Variable : public Declaration {
 public:
-	static uptr<Variable>
-	create(std::string id, bool is_const)
-	{
-		uptr<Variable> tmp(new Variable(id, is_const));
-		return std::move(tmp);
-	}
+	Variable(std::string id, bool is_const)
+		: Declaration(Declaration::Variable),
+		  id(id), constant(is_const)
+	{ }
 
 	virtual ~Variable() = default;
 
@@ -100,13 +98,8 @@ public:
 	{
 		size_expr = std::move(newSize);
 	}
-private:
-	Variable(std::string id, bool constant)
-		: Declaration(Declaration::Variable),
-		  id(id), constant(constant)
-	{
-	}
 
+private:
 	std::string id;
 	bool constant;
 	uptr<Expression> init_expr = nullptr;
@@ -118,14 +111,10 @@ typedef std::vector<std::unique_ptr<Variable>> VarList;
 // TODO: merge with Function
 class FunctionProto : public Declaration {
 public:
-	static uptr<FunctionProto>
-	create(std::string id,
-	       std::string returnType,
-	       VarList args)
-	{
-		auto tmp = new FunctionProto(id, returnType, std::move(args));
-		return uptr<FunctionProto>(tmp);
-	}
+	FunctionProto(std::string id, std::string returnType, VarList args)
+		: Declaration(Declaration::FunctionProto),
+		  name(id), args(std::move(args)), returnType(returnType)
+	{ }
 
 	virtual ~FunctionProto() = default;
 
@@ -148,15 +137,8 @@ public:
 	{
 		visitor.visit(*this);
 	}
-private:
-	FunctionProto(std::string id,
-	         std::string returnType,
-	         VarList args)
-		: Declaration(Declaration::FunctionProto),
-		  name(id), args(std::move(args)), returnType(returnType)
-	{
-	}
 
+private:
 	std::string name;
 	std::string returnType;
 	VarList args;
@@ -164,13 +146,12 @@ private:
 
 class Function : public Declaration {
 public:
-	static uptr<Function>
-	create(uptr<tree::FunctionProto> proto,
-	       uptr<StatementBlock> body)
-	{
-		auto tmp = new Function(std::move(proto), std::move(body));
-		return uptr<Function>(tmp);
-	}
+	Function(uptr<tree::FunctionProto> proto,
+		 uptr<StatementBlock> body)
+		: Declaration(Declaration::Function),
+		  proto(std::move(proto)),
+		  body(std::move(body))
+	{ }
 
 	virtual ~Function() = default;
 
@@ -200,15 +181,8 @@ public:
 	{
 		visitor.visit(*this);
 	}
-private:
-	Function(uptr<tree::FunctionProto> proto,
-		 uptr<StatementBlock> body)
-		: Declaration(Declaration::Function),
-		  proto(std::move(proto)),
-		  body(std::move(body))
-	{
-	}
 
+private:
 	uptr<tree::FunctionProto> proto;
 	uptr<StatementBlock> body;
 	//VarList localVars;
@@ -216,12 +190,10 @@ private:
 
 class Class : public Declaration {
 public:
-	static uptr<Class> create(std::string name,
-	                std::vector<uptr<tree::Variable>> members)
-	{
-		auto tmp = new Class(name, std::move(members));
-		return uptr<Class>(tmp);
-	}
+	Class(std::string name, VarList members)
+		: Declaration(Declaration::Class),
+		  name(name), body(std::move(members))
+	{ }
 
 	virtual ~Class() = default;
 
@@ -234,26 +206,21 @@ public:
 	{
 		return body;
 	}
-private:
-	Class(std::string name, std::vector<uptr<tree::Variable>> members)
-		: Declaration(Declaration::Class),
-		  name(name), body(std::move(members))
-	{
-	}
 
+private:
 	std::string name;
 	std::vector<uptr<tree::Variable>> body;
 };
 
 class Prototype : public Declaration {
 public:
-	static uptr<Prototype> create(
-	                std::string name, std::string base,
-	                uptr<StatementBlock> body)
+	Prototype(std::string name, std::string base,
+	          uptr<StatementBlock> body)
+		: Declaration(Declaration::Prototype),
+		  name_(name), base_(base), block(std::move(body))
 	{
-		auto tmp = new Prototype(name, base, std::move(body));
-		return uptr<Prototype>(tmp);
 	}
+
 	virtual ~Prototype() = default;
 
 	virtual void accept(tree::Visitor& visitor)
@@ -275,14 +242,8 @@ public:
 	{
 		return *block;
 	}
-protected:
-	Prototype(std::string name, std::string base,
-	          uptr<StatementBlock> body)
-		: Declaration(Declaration::Prototype),
-		  name_(name), base_(base), block(std::move(body))
-	{
-	}
 
+protected:
 	std::string name_;
 	std::string base_;
 
@@ -291,13 +252,12 @@ protected:
 
 class Instance : public Declaration {
 public:
-	static uptr<Instance> create(
-	                std::string name, std::string base,
-	                uptr<StatementBlock> body)
-	{
-		auto tmp = new Instance(name, base, std::move(body));
-		return uptr<Instance>(tmp);
-	}
+	Instance(std::string name, std::string base,
+	          uptr<StatementBlock> body)
+		: Declaration(Declaration::Instance),
+		  name_(name), base_(base), block(std::move(body))
+	{ }
+
 	virtual ~Instance() = default;
 
 	virtual void accept(tree::Visitor& visitor)
@@ -319,14 +279,8 @@ public:
 	{
 		return block.get();
 	}
-protected:
-	Instance(std::string name, std::string base,
-	          uptr<StatementBlock> body)
-		: Declaration(Declaration::Instance),
-		  name_(name), base_(base), block(std::move(body))
-	{
-	}
 
+protected:
 	std::string name_;
 	std::string base_;
 

@@ -104,7 +104,7 @@ Parser::parseVariable(bool isConst, bool array)
 	std::string name = token.data();
 	getNextToken(); // consume identifier
 
-	auto var = tree::Variable::create(name, isConst);
+	auto var = std::make_unqiue<tree::Variable>(name, isConst);
 
 	if (match(Token::l_bracket)) {
 		if (!array)
@@ -113,6 +113,7 @@ Parser::parseVariable(bool isConst, bool array)
 		auto size_expr = parseExpression();
 		if (!size_expr)
 			return nullptr;
+
 		var->setSizeExpr(std::move(size_expr));
 
 		if (!match(Token::r_bracket))
@@ -273,7 +274,7 @@ Parser::parseFunctionPrototype()
 	if (!match(Token::r_paren))
 		return error(diag, token, Diagnostic::ExpectedVariableDecl);
 
-	return tree::FunctionProto::create(name, ret, std::move(args));
+	return std::make_unique<tree::FunctionProto>(name, ret, std::move(args));
 }
 
 /*
@@ -297,8 +298,7 @@ Parser::parseFunctionDefinition()
 	if (!body)
 		return nullptr;
 
-	return tree::Function::create(
-	        std::move(proto), std::move(body));
+	return std::make_unique<tree::Function>(std::move(proto), std::move(body));
 }
 
 /*
@@ -350,7 +350,7 @@ Parser::parseClass()
 		return error(diag, token, Diagnostic::UnexpectedToken2,
 		             token.data(), Token::r_brace);
 
-	return tree::Class::create(name, std::move(members));
+	return std::make_unique<tree::Class>(name, std::move(members));
 }
 
 uptr<tree::Prototype>
@@ -378,7 +378,7 @@ Parser::parsePrototype()
 	if (!body)
 		return nullptr;
 
-	return tree::Prototype::create(name, base, std::move(body));
+	return std::make_unique<tree::Prototype>(name, base, std::move(body));
 }
 
 uptr<tree::Instance>
@@ -403,13 +403,13 @@ Parser::parseInstance()
 	                     token.data(), Token::r_paren);
 
 	if (match(Token::semicolon))
-		return tree::Instance::create(name, base, nullptr);
+		return std::make_unique<tree::Instance>(name, base, nullptr);
 
 	auto body = parseStatementBlock();
 	if (!body)
 		return nullptr;
 
-	return tree::Instance::create(name, base, std::move(body));
+	return std::make_unique<tree::Instance>(name, base, std::move(body));
 }
 
 uptr<tree::Statement>
@@ -448,9 +448,9 @@ Parser::parseBreakStatement()
 
 	uptr<tree::Statement> stmt;
 	if (token == Token::kw_break)
-		stmt = tree::BreakStatement::create();
+		stmt = std::make_unique<tree::BreakStatement>();
 	else if (token == Token::kw_continue)
-		stmt = tree::ContinueStatement::create();
+		stmt = std::make_unique<tree::ContinueStatement>();
 
 	getNextToken();
 
@@ -549,7 +549,8 @@ Parser::parseWhileStatement()
 	if (!body)
 		return nullptr;
 
-	return tree::WhileStatement::create(std::move(ifExpr), std::move(body));
+	return std::make_unique<tree::WhileStatement>(
+	                std::move(ifExpr), std::move(body));
 }
 
 uptr<tree::Statement>
@@ -572,7 +573,8 @@ Parser::parseDoStatement()
 		return error(diag, token, Diagnostic::ExpectedSemicolon,
 		             "do-while statement");
 
-	return tree::DoStatement::create(std::move(ifExpr), std::move(body));
+	return std::make_unique<tree::DoStatement>(
+	                std::move(ifExpr), std::move(body));
 }
 
 
