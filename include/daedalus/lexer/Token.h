@@ -10,8 +10,10 @@
 #define Daedalus_Lexer_Token
 #include <cassert>
 #include <string>
-#include <daedalus/common/types.h>
+#include <aw/types/types.h>
 namespace daedalus {
+using namespace aw;
+
 struct Location {
 	Location() = default;
 	Location(size_t offset)
@@ -19,11 +21,11 @@ struct Location {
 	{
 		assert(offset < (1 << 31));
 	}
+	u32 fileId;
 	u32 pos;
 };
 
-class Token {
-public:
+struct Token {
 	/*!
 	 * Enumeration of all token kinds,
 	 * All kinds are defined if TokenDef.h
@@ -75,6 +77,7 @@ public:
 	{
 		return loc;
 	}
+
 private:
 	Kind kind;
 	char const* start;

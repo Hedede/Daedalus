@@ -8,9 +8,11 @@
  */
 #include <cassert>
 #include <algorithm>
-#include <daedalus/utility/string.h>
+#include <aw/utility/string/case.h>
+#include <aw/utility/string/compose.h>
 #include <daedalus/ou/Parser.h>
 namespace daedalus {
+using namespace aw;
 namespace ou {
 namespace {
 char const* skipComment(char const* cur, char const* end)

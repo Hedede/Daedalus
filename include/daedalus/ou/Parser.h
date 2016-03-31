@@ -13,6 +13,7 @@
 #include <daedalus/io/SourceBuffer.h>
 #include <daedalus/lexer/Lexer.h>
 namespace daedalus {
+using namespace aw;
 namespace ou {
 struct OutputUnit {
 	std::string name;

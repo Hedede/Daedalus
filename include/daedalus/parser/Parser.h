@@ -8,12 +8,12 @@
  */
 #ifndef Daedalus_Parser
 #define Daedalus_Parser
-#include <daedalus/common/types.h>
+#include <aw/types/types.h>
 #include <daedalus/lexer/Lexer.h>
 #include <daedalus/syntax/Declaration.h>
 #include <daedalus/parser/Operators.h>
-
 namespace daedalus {
+using namespace aw;
 namespace tree {
 class Statement;
 class StatementBlock;
@@ -22,7 +22,7 @@ class Variable;
 class Prototype;
 class Instance;
 class Expression;
-}
+} // namespace tree
 
 class DiagnosticHelper;
 

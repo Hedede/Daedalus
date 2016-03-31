@@ -8,14 +8,18 @@
  */
 #ifndef Daedalus_Expression
 #define Daedalus_Expression
+#include <aw/types/types.h>
 #include <daedalus/syntax/Statement.h>
 namespace daedalus {
+using namespace aw;
 namespace tree {
 class Expression : public Statement {
 public:
 	virtual ~Expression() = default;
 
 	virtual void accept(tree::Visitor& visitor) = 0;
+private:
+	// Kind const kind_;
 };
 
 /*!

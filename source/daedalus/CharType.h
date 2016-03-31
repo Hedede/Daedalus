@@ -9,8 +9,9 @@
 #ifndef Daedalus_CharType
 #define Daedalus_CharType
 #include <functional>
-#include <daedalus/common/types.h>
+#include <aw/types/types.h>
 namespace daedalus {
+using namespace aw;
 namespace characters {
 /*!
  * Character categories

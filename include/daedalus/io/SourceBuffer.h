@@ -8,15 +8,15 @@
  */
 #ifndef Daedalus_FileSystem_SourceBuffer
 #define Daedalus_FileSystem_SourceBuffer
-#include <daedalus/common/types.h>
-#include <daedalus/io/ReadFile.h>
+#include <aw/io/ReadFile.h>
 namespace daedalus {
+using namespace aw;
 /*!
  * Wraps access to source files
  */
 class SourceBuffer {
 public:
-	SourceBuffer(ReadFile& file)
+	SourceBuffer(io::ReadFile& file)
 		: buffer(nullptr), length(0)
 	{
 		if (!file.isOpen())

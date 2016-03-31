@@ -6,7 +6,7 @@
  * This is free software: you are free to change and redistribute it.
  * There is NO WARRANTY, to the extent permitted by law.
  */
-#include <daedalus/utility/string.h>
+#include <aw/utility/string/case.h>
 #include <daedalus/lexer/KeywordMap.h>
 namespace daedalus {
 constexpr bool Case_Insensitive_Keywords = true;
@@ -21,7 +21,7 @@ KeywordMap& KeywordMap::add(std::string def, Token::Kind kind)
 Token::Kind KeywordMap::get(std::string def)
 {
 	if (Case_Insensitive_Keywords)
-		string::tolower(def);
+		aw::string::tolower(def);
 
 	auto result = theMap.find(def);
 

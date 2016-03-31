@@ -9,10 +9,14 @@
 #ifndef Daedalus_DignosticHelper
 #define Daedalus_DignosticHelper
 #include <cassert>
+#ifdef _WINDOWS
+#include <cstdio>
+#endif
 #include <iostream> //temporary
-#include <daedalus/utility/string.h>
+#include <aw/utility/string/compose.h>
 #include <daedalus/utility/Diagnostic.h>
 namespace daedalus {
+using namespace aw;
 class DiagnosticHelper {
 public:
 	DiagnosticHelper()
@@ -24,7 +28,11 @@ public:
 		assert(size_t(diag.id) < sizeof(diagMessages)/sizeof(char*));
 		auto msg = string::compose(diagMessages[diag.id], diag.args);
 		auto pos = diag.loc.pos;
-		std::cerr << pos << ": " << msg << "\n";
+#ifdef _WINDOWS
+		fputs(stderr, compose("error:%0: %1", pos, msg));
+#else
+		std::cerr << "error:" << pos << ": " << msg << "\n";
+#endif
 	}
 };
 } // namespace daedalus

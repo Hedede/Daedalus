@@ -8,10 +8,12 @@
  */
 #ifndef Daedalus_Lexer
 #define Daedalus_Lexer
+#include <aw/types/types.h>
 #include <daedalus/io/SourceBuffer.h>
 #include <daedalus/lexer/Token.h>
 #include <daedalus/lexer/KeywordMap.h>
 namespace daedalus {
+using namespace aw;
 /*!
  * Produces token stream from a source buffer.
  */

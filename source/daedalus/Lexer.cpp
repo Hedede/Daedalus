@@ -7,7 +7,6 @@
  * There is NO WARRANTY, to the extent permitted by law.
  */
 #include <algorithm>
-#include <daedalus/common/types.h>
 #include <daedalus/lexer/Lexer.h>
 #include "CharType.h"
 namespace daedalus {

@@ -7,14 +7,15 @@
  * There is NO WARRANTY, to the extent permitted by law.
  */
 #include <iostream>
+#include <aw/io/WriteStream.h>
 #include <daedalus/syntax/Declaration.h>
 #include <daedalus/syntax/Expression.h>
-#include <daedalus/io/WriteStream.h>
 #include <daedalus/utility/Printer.h>
 #include <daedalus/utility/DiagnosticHelper.h>
 #include <daedalus/parser/Parser.h>
 #include "OUGen.h"
 namespace daedalus {
+using namespace aw;
 class TestWriteStream : public io::WriteStream {
 public:
 	virtual i32 put(char c)
@@ -41,7 +42,7 @@ int main(char** argv)
 		return 1;
 
 	std::cout << argv[1] << std::endl;
-	ReadFile file(argv[1]);
+	io::ReadFile file(argv[1]);
 	SourceBuffer buffer(file);
 	Lexer lexer(&buffer);
 	DiagnosticHelper diag;
@@ -56,7 +57,7 @@ int main(char** argv)
 		decls.push_back(std::move(decl));
 		decl = parser.parseDeclaration();
 	}
-	//while (true);
+	while (true);
 
 	return 0;
 }

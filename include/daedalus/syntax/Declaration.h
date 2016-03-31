@@ -9,9 +9,10 @@
 #ifndef Daedalus_Declaration
 #define Daedalus_Declaration
 #include <vector>
-#include <daedalus/common/types.h>
+#include <aw/types/types.h>
 #include <daedalus/syntax/Visitor.h>
 namespace daedalus {
+using namespace aw;
 namespace tree {
 class Declaration {
 public:
@@ -45,7 +46,7 @@ private:
 	Kind const kind;
 };
 
-typedef std::vector<uptr<Declaration>> DeclarationList;
+using DeclarationList = std::vector<uptr<Declaration>>;
 
 class Expression;
 

@@ -9,12 +9,13 @@
 #include <iostream>
 #include <daedalus/ou/Parser.h>
 namespace daedalus {
+using namespace aw;
 int ou_gen(char** argv)
 {
 	if (argv[1] == 0)
 		return 1;
 
-	ReadFile file(argv[1]);
+	io::ReadFile file(argv[1]);
 	SourceBuffer buffer(file);
 	ou::Parser parser(buffer);
 	auto ou = parser.loadOutputUnits();

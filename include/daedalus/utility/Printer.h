@@ -8,10 +8,10 @@
  */
 #ifndef Daedalus_Printer
 #define Daedalus_Printer
-#include <daedalus/io/WriteStream.h>
+#include <aw/io/WriteStream.h>
 #include <daedalus/syntax/Visitor.h>
-
 namespace daedalus {
+using namespace aw;
 class Printer : public tree::Visitor {
 public:
 	Printer(io::WriteStream& out);

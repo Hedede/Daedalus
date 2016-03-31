@@ -8,9 +8,10 @@
  */
 #ifndef Daedalus_Statement
 #define Daedalus_Statement
-#include <daedalus/common/types.h>
+#include <aw/types/types.h>
 #include <daedalus/syntax/Visitor.h>
 namespace daedalus {
+using namespace aw;
 namespace tree {
 class Statement {
 public:
@@ -21,7 +22,8 @@ public:
 
 class Expression;
 
-typedef std::vector<uptr<Statement>>   StatementList;
+using StatementList = std::vector<uptr<Statement>>;
+
 class StatementBlock : public Statement {
 public:
 	StatementBlock(StatementList statements)

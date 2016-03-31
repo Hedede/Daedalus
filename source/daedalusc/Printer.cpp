@@ -13,6 +13,7 @@
 #include <daedalus/utility/Printer.h>
 #include <daedalus/utility/PrintToken.h>
 namespace daedalus {
+using namespace aw;
 Printer::Printer(io::WriteStream& out)
 	: writer(out)
 {
