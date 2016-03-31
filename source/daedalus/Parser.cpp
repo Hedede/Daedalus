@@ -104,7 +104,7 @@ Parser::parseVariable(bool isConst, bool array)
 	std::string name = token.data();
 	getNextToken(); // consume identifier
 
-	auto var = std::make_unqiue<tree::Variable>(name, isConst);
+	auto var = std::make_unique<tree::Variable>(name, isConst);
 
 	if (match(Token::l_bracket)) {
 		if (!array)
