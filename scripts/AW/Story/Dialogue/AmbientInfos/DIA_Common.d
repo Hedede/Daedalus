@@ -5,5 +5,5 @@ func void DIA_End()
 
 func int DIA_Always()
 {
-	return true; 
+	return true;
 };
