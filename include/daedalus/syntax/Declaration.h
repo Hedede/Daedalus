@@ -68,7 +68,7 @@ public:
 		return constant;
 	}
 
-	virtual void setConst(bool cnst)
+	void setConst(bool cnst)
 	{
 		constant = cnst;
 	}
@@ -113,12 +113,12 @@ public:
 
 	virtual ~FunctionProto() = default;
 
-	virtual std::string getName() const
+	std::string getName() const
 	{
 		return name;
 	}
 
-	virtual std::string getReturnType() const
+	std::string getReturnType() const
 	{
 		return returnType;
 	}
