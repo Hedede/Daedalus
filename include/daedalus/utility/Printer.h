@@ -17,12 +17,14 @@ public:
 	Printer(io::WriteStream& out);
 	virtual ~Printer() = default;
 
-	virtual void visit(tree::FunctionProto& node);
-	virtual void visit(tree::Function& node);
-	virtual void visit(tree::Variable& node);
-	virtual void visit(tree::Class& node);
-	virtual void visit(tree::Prototype& node);
-	virtual void visit(tree::Instance& node);
+	void visit(tree::Declaration& node);
+
+	void visit(tree::FunctionProto& node);
+	void visit(tree::Function& node);
+	void visit(tree::Variable& node);
+	void visit(tree::Class& node);
+	void visit(tree::Prototype& node);
+	void visit(tree::Instance& node);
 
 	virtual void visit(tree::DeclStatement& node);
 	virtual void visit(tree::StatementBlock& node);

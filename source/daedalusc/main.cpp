@@ -53,7 +53,7 @@ int main(char** argv)
 	std::vector<uptr<tree::Declaration>> decls;
 	auto decl = parser.parseDeclaration();
 	while (decl) {
-		decl->accept(printer);
+		printer.visit(*decl);
 		decls.push_back(std::move(decl));
 		decl = parser.parseDeclaration();
 	}

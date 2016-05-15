@@ -101,9 +101,8 @@ void Printer::printSignature(tree::FunctionProto& node)
 	start();
 	endLine();
 
-	for (auto& arg : node.getArguments()) {
-		arg->accept(*this);
-	}
+	for (auto& arg : node.getArguments())
+		visit(*arg);
 
 	end();
 }
@@ -159,7 +158,7 @@ void Printer::visit(tree::Class& node)
 {
 	start("class");
 	for (auto& var : node.members())
-		var->accept(*this);
+		visit(*var);
 	end();
 }
 
@@ -178,9 +177,27 @@ void Printer::visit(tree::Variable& node)
 	end();
 }
 
+void Printer::visit(tree::Declaration& node)
+{
+	switch(node.kind()) {
+	case tree::Declaration::FunctionProto:
+		return visit(static_cast<tree::FunctionProto&>(node));
+	case tree::Declaration::Function:
+		return visit(static_cast<tree::Function&>(node));
+	case tree::Declaration::Variable:
+		return visit(static_cast<tree::Variable&>(node));
+	case tree::Declaration::Class:
+		return visit(static_cast<tree::Class&>(node));
+	case tree::Declaration::Prototype:
+		return visit(static_cast<tree::Prototype&>(node));
+	case tree::Declaration::Instance:
+		return visit(static_cast<tree::Instance&>(node));
+	}
+}
+
 void Printer::visit(tree::DeclStatement& node)
 {
-	node.declaration().accept(*this);
+	visit(node.declaration());
 }
 
 void Printer::visit(tree::StatementBlock& node)
