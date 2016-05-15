@@ -18,6 +18,12 @@ public:
 	virtual ~Expression() = default;
 
 	virtual void accept(tree::Visitor& visitor) = 0;
+
+protected:
+	Expression()
+		: Statement(Statement::Expr)
+	{ }
+
 private:
 	// Kind const kind_;
 };

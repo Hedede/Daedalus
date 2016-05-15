@@ -11,14 +11,6 @@
 namespace daedalus {
 namespace tree {
 class Node;
-class DeclStatement;
-class StatementBlock;
-class IfStatement;
-class WhileStatement;
-class DoStatement;
-class BreakStatement;
-class ContinueStatement;
-class ReturnStatement;
 class NumberExpr;
 class StringExpr;
 class IdentifierExpr;
@@ -33,15 +25,6 @@ class BinaryExpr;
 class Visitor {
 public:
 	virtual ~Visitor() = default;
-
-	virtual void visit(tree::DeclStatement& node) {};
-	virtual void visit(tree::StatementBlock& node) {};
-	virtual void visit(tree::IfStatement& node) {};
-	virtual void visit(tree::ReturnStatement& node) {};
-	virtual void visit(tree::WhileStatement& node) {};
-	virtual void visit(tree::DoStatement& node) {};
-	virtual void visit(tree::BreakStatement& node) {};
-	virtual void visit(tree::ContinueStatement& node) {};
 
 	virtual void visit(tree::NumberExpr& node) {};
 	virtual void visit(tree::StringExpr& node) {};

@@ -17,7 +17,31 @@ class Statement {
 public:
 	virtual ~Statement() = default;
 
-	virtual void accept(tree::Visitor& visitor) = 0;
+	//! List of concrete derived types
+	enum Kind {
+		StatementBlock,
+		DeclStatement,
+		IfStatement,
+		WhileStatement,
+		DoStatement,
+		BreakStatement,
+		ContinueStatement,
+		ReturnStatement,
+		Expr,
+	};
+
+	Kind kind() const
+	{
+		return kind_;
+	}
+
+protected:
+	Statement(Kind k)
+		: kind_(k)
+	{ }
+
+private:
+	Kind const kind_;
 };
 
 class Expression;
@@ -27,21 +51,17 @@ using StatementList = std::vector<uptr<Statement>>;
 class StatementBlock : public Statement {
 public:
 	StatementBlock(StatementList statements)
-		: stmts(std::move(statements))
-	{
-	}
+		: Statement(Statement::StatementBlock),
+		  stmts(std::move(statements))
+	{ }
 
 	virtual ~StatementBlock() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	StatementList& statements()
 	{
 		return stmts;
 	}
+
 private:
 	StatementList   stmts;
 };
@@ -51,20 +71,17 @@ class Declaration;
 class DeclStatement : public Statement {
 public:
 	DeclStatement(uptr<Declaration> local)
-		: decl(std::move(local))
-	{
-	}
-	virtual ~DeclStatement() = default;
+		: Statement(Statement::DeclStatement),
+		  decl(std::move(local))
+	{ }
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
+	virtual ~DeclStatement() = default;
 
 	Declaration& declaration()
 	{
 		return *decl;
 	}
+
 protected:
 	uptr<Declaration> decl;
 };
@@ -81,17 +98,13 @@ public:
 	IfStatement(uptr<Expression> ifExpr,
 	            uptr<Statement>  ifBody,
 	            uptr<Statement> elseBody)
-		: ifExpr(std::move(ifExpr)),
+		: Statement(Statement::IfStatement),
+		  ifExpr(std::move(ifExpr)),
 		  ifBody(std::move(ifBody)),
 		  elseBody(std::move(elseBody))
 	{ }
 
 	virtual ~IfStatement() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	Expression& condition()
 	{
@@ -120,15 +133,12 @@ protected:
 class WhileStatement : public Statement {
 public:
 	WhileStatement(uptr<Expression> cond, uptr<Statement> stmt)
-		: cond(std::move(cond)), stmt(std::move(stmt))
+		: Statement(Statement::WhileStatement),
+		  cond(std::move(cond)),
+		  stmt(std::move(stmt))
 	{ }
 
 	virtual ~WhileStatement() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	Expression& condition()
 	{
@@ -151,15 +161,12 @@ private:
 class DoStatement : public Statement {
 public:
 	DoStatement(uptr<Expression> cond, uptr<Statement> stmt)
-		: cond(std::move(cond)), stmt(std::move(stmt))
+		: Statement(Statement::DoStatement),
+		  cond(std::move(cond)),
+		  stmt(std::move(stmt))
 	{ }
 
 	virtual ~DoStatement() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	Expression& condition()
 	{
@@ -179,29 +186,19 @@ private:
 class BreakStatement : public Statement {
 public:
 	BreakStatement()
-		: Statement()
-	{
-	}
+		: Statement(Statement::BreakStatement)
+	{ }
 
 	virtual ~BreakStatement() = default;
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 };
 
 class ContinueStatement : public Statement {
 public:
 	ContinueStatement()
-		: Statement()
-	{
-	}
+		: Statement(Statement::ContinueStatement)
+	{ }
 
 	virtual ~ContinueStatement() = default;
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 };
 
 /*!
@@ -210,15 +207,11 @@ public:
 class ReturnStatement : public Statement {
 public:
 	ReturnStatement(uptr<Expression> retExpr)
-		: expr(std::move(retExpr))
+		: Statement(Statement::ReturnStatement),
+		  expr(std::move(retExpr))
 	{ }
 
 	virtual ~ReturnStatement() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	Expression* expression()
 	{

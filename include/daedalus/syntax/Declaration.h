@@ -134,6 +134,8 @@ private:
 	VarList args;
 };
 
+class StatementBlock;
+
 class Function : public Declaration {
 public:
 	Function(uptr<tree::FunctionProto> proto,
