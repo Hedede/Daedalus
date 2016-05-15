@@ -9,7 +9,6 @@
 #ifndef Daedalus_Statement
 #define Daedalus_Statement
 #include <aw/types/types.h>
-#include <daedalus/syntax/Visitor.h>
 namespace daedalus {
 using namespace aw;
 namespace tree {

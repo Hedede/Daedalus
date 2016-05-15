@@ -10,7 +10,6 @@
 #define Daedalus_Declaration
 #include <vector>
 #include <aw/types/types.h>
-#include <daedalus/syntax/Visitor.h>
 namespace daedalus {
 using namespace aw;
 namespace tree {
