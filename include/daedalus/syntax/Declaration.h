@@ -21,9 +21,6 @@ class Declaration {
 public:
 	virtual ~Declaration() = default;
 
-	//! Implements Visitor Pattern
-	virtual void accept(tree::Visitor& visitor) = 0;
-
 	//! List of concrete derived types
 	enum Kind {
 		FunctionProto,
@@ -60,11 +57,6 @@ public:
 	{ }
 
 	virtual ~Variable() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	std::string name() const
 	{
@@ -136,11 +128,6 @@ public:
 		return args;
 	}
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
-
 private:
 	std::string name;
 	std::string returnType;
@@ -180,11 +167,6 @@ public:
 	}
 	*/
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
-
 private:
 	uptr<tree::FunctionProto> proto;
 	uptr<StatementBlock> body;
@@ -199,11 +181,6 @@ public:
 	{ }
 
 	virtual ~Class() = default;
-
-	virtual void accept(Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	std::vector<uptr<tree::Variable>>& members()
 	{
@@ -225,11 +202,6 @@ public:
 	}
 
 	virtual ~Prototype() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	std::string name() const
 	{
@@ -262,11 +234,6 @@ public:
 	{ }
 
 	virtual ~Instance() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	std::string name() const
 	{
