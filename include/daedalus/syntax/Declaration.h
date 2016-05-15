@@ -14,6 +14,9 @@
 namespace daedalus {
 using namespace aw;
 namespace tree {
+/*!
+ * Declaration specifies meaning of a symbol.
+ */
 class Declaration {
 public:
 	virtual ~Declaration() = default;
@@ -31,19 +34,18 @@ public:
 		Instance
 	};
 
-	Kind getKind() const
+	Kind kind() const
 	{
-		return kind;
+		return kind_;
 	}
 
 protected:
 	Declaration(Kind k)
-		: kind(k)
-	{
-	}
+		: kind_(k)
+	{ }
 
 private:
-	Kind const kind;
+	Kind const kind_;
 };
 
 using DeclarationList = std::vector<uptr<Declaration>>;
