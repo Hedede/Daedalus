@@ -120,7 +120,7 @@ void Printer::visit(tree::Function& node)
 	printSignature(node.prototype());
 
 	start();
-	node.getBody().accept(*this);
+	visit(node.getBody());
 	end();
 	end();
 }
@@ -134,7 +134,7 @@ void Printer::visit(tree::Prototype& node)
 	write(')');
 
 	start();
-	node.body().accept(*this);
+	visit(node.body());
 	end();
 	end();
 }
@@ -149,7 +149,7 @@ void Printer::visit(tree::Instance& node)
 
 	start();
 	if (node.body())
-		node.body()->accept(*this);
+		visit(*node.body());
 	end();
 	end();
 }
@@ -206,7 +206,7 @@ void Printer::visit(tree::StatementBlock& node)
 	endLine();
 	for (auto& stmt : node.statements()) {
 		startLine();
-		stmt->accept(*this);
+		visit(*stmt);
 		endLine();
 	}
 	end();
@@ -219,12 +219,12 @@ void Printer::visit(tree::IfStatement& node)
 	node.condition().accept(*this);
 
 	start("then");
-	node.thenBranch().accept(*this);
+	visit(node.thenBranch());
 	end();
 
 	if (node.elseBranch()) {
 		start("else");
-		node.elseBranch()->accept(*this);
+		visit(*node.elseBranch());
 		end();
 	}
 	end();
@@ -236,7 +236,7 @@ void Printer::visit(tree::WhileStatement& node)
 	node.condition().accept(*this);
 
 	start("");
-	node.body().accept(*this);
+	visit(node.body());
 	end();
 	end();
 }
@@ -244,7 +244,7 @@ void Printer::visit(tree::DoStatement& node)
 {
 	start("do");
 	start("");
-	node.body().accept(*this);
+	visit(node.body());
 	end();
 	write("while");
 	node.condition().accept(*this);
@@ -269,6 +269,30 @@ void Printer::visit(tree::ReturnStatement& node)
 		node.expression()->accept(*this);
 
 	endInline();
+}
+
+void Printer::visit(tree::Statement& node)
+{
+	switch(node.kind()) {
+	case tree::Statement::DeclStatement:
+		return visit(static_cast<tree::DeclStatement&>(node));
+	case tree::Statement::StatementBlock:
+		return visit(static_cast<tree::StatementBlock&>(node));
+	case tree::Statement::IfStatement:
+		return visit(static_cast<tree::IfStatement&>(node));
+	case tree::Statement::ReturnStatement:
+		return visit(static_cast<tree::ReturnStatement&>(node));
+	case tree::Statement::WhileStatement:
+		return visit(static_cast<tree::WhileStatement&>(node));
+	case tree::Statement::DoStatement:
+		return visit(static_cast<tree::DoStatement&>(node));
+	case tree::Statement::BreakStatement:
+		return visit(static_cast<tree::BreakStatement&>(node));
+	case tree::Statement::ContinueStatement:
+		return visit(static_cast<tree::ContinueStatement&>(node));
+	case tree::Statement::Expr:
+		return static_cast<tree::Expression&>(node).accept(*this);
+	}
 }
 
 void Printer::visit(tree::NumberExpr& node)

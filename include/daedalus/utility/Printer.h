@@ -26,14 +26,16 @@ public:
 	void visit(tree::Prototype& node);
 	void visit(tree::Instance& node);
 
-	virtual void visit(tree::DeclStatement& node);
-	virtual void visit(tree::StatementBlock& node);
-	virtual void visit(tree::IfStatement& node);
-	virtual void visit(tree::ReturnStatement& node);
-	virtual void visit(tree::WhileStatement& node);
-	virtual void visit(tree::DoStatement& node);
-	virtual void visit(tree::BreakStatement& node);
-	virtual void visit(tree::ContinueStatement& node);
+	void visit(tree::Statement& node);
+
+	void visit(tree::DeclStatement& node);
+	void visit(tree::StatementBlock& node);
+	void visit(tree::IfStatement& node);
+	void visit(tree::ReturnStatement& node);
+	void visit(tree::WhileStatement& node);
+	void visit(tree::DoStatement& node);
+	void visit(tree::BreakStatement& node);
+	void visit(tree::ContinueStatement& node);
 
 	virtual void visit(tree::NumberExpr& node);
 	virtual void visit(tree::StringExpr& node);
