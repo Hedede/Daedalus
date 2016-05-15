@@ -13,19 +13,34 @@
 namespace daedalus {
 using namespace aw;
 namespace tree {
-class Expression : public Statement {
+class Expression {
 public:
 	virtual ~Expression() = default;
 
-	virtual void accept(tree::Visitor& visitor) = 0;
+	enum Kind {
+		IdentifierExpr,
+		FieldExpr,
+		CallExpr,
+		UnaryExpr,
+		BinaryExpr,
+		NumberExpr,
+		StringExpr,
+		SubscriptExpr,
+		ArrayInitializer,
+	};
+
+	Kind kind() const
+	{
+		return kind_;
+	}
 
 protected:
-	Expression()
-		: Statement(Statement::Expr)
+	Expression(Kind k)
+		: kind_(k)
 	{ }
 
 private:
-	// Kind const kind_;
+	Kind const kind_;
 };
 
 /*!
@@ -34,21 +49,18 @@ private:
 class IdentifierExpr : public Expression {
 public:
 	IdentifierExpr(std::string id)
-		: id(id)
+		: Expression(Expression::IdentifierExpr),
+		  id(id)
 	{
 	}
 
 	virtual ~IdentifierExpr() = default;
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
-
 	std::string getName()
 	{
 		return id;
 	}
+
 private:
 	std::string id;
 };
@@ -60,26 +72,23 @@ class FieldExpr : public Expression {
 public:
 	FieldExpr(std::string inst,
 	          std::string field)
-		: inst(inst), field(field)
+		: Expression(Expression::FieldExpr),
+		  inst(inst), field(field)
 	{
 	}
 
 	virtual ~FieldExpr() = default;
 
-	virtual std::string identifier() const
+	std::string identifier() const
 	{
 		return inst;
 	}
 
-	virtual std::string fieldName()
+	std::string fieldName()
 	{
 		return field;
 	}
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 private:
 	std::string inst;
 	std::string field;
@@ -89,30 +98,27 @@ class CallExpr : public Expression {
 public:
 	CallExpr(std::string callee,
 	         std::vector<std::unique_ptr<Expression>> arguments)
-		: callee(callee), arguments(std::move(arguments))
+		: Expression(Expression::CallExpr),
+		  callee(callee), argList(std::move(arguments))
 	{
 	}
 
 	virtual ~CallExpr() = default;
 
-	virtual std::string getFunction() const
+	std::string function() const
 	{
 		return callee;
 	}
 
-	virtual std::vector<uptr<Expression>>& getArguments()
+	std::vector<uptr<Expression>>& arguments()
 	{
-		return arguments;
+		return argList;
 	}
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 private:
 	//Function* callee;
 	std::string callee;
-	std::vector<std::unique_ptr<Expression>> arguments;
+	std::vector<std::unique_ptr<Expression>> argList;
 };
 
 /*!
@@ -121,26 +127,23 @@ private:
 class UnaryExpr : public Expression {
 public:
 	UnaryExpr(int op, std::unique_ptr<Expression> operand)
-		: op(op), operand(std::move(operand))
+		: Expression(Expression::UnaryExpr),
+		  op(op), operand(std::move(operand))
 	{
 	}
 
 	virtual ~UnaryExpr() = default;
 
-	virtual Expression& getOperand()
+	Expression& getOperand()
 	{
 		return *operand.get();
 	}
 
-	virtual int getOperation()
+	int getOperation()
 	{
 		return op;
 	}
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 private:
 	std::unique_ptr<Expression> operand;
 	int op;
@@ -154,29 +157,25 @@ public:
 	BinaryExpr(int op,
 	           std::unique_ptr<Expression> lhs,
 	           std::unique_ptr<Expression> rhs)
-		: op(op), lhs(std::move(lhs)), rhs(std::move(rhs))
-	{
-	}
+		: Expression(Expression::BinaryExpr), op(op),
+		  lhs(std::move(lhs)), rhs(std::move(rhs))
+	{ }
 
 	virtual ~BinaryExpr() = default;
 
-	virtual Expression& getLHS()
+	Expression& getLHS()
 	{
 		return *lhs.get();
 	}
-	virtual Expression& getRHS()
+	Expression& getRHS()
 	{
 		return *rhs.get();
 	}
-	virtual int getOperation()
+	int getOperation()
 	{
 		return op;
 	}
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 private:
 	std::unique_ptr<Expression> lhs;
 	std::unique_ptr<Expression> rhs;
@@ -189,21 +188,18 @@ private:
 class NumberExpr : public Expression {
 public:
 	NumberExpr(std::string value)
-		: value(value)
+		: Expression(Expression::NumberExpr),
+		  value(value)
 	{
 	}
 
 	virtual ~NumberExpr() = default;
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
-
 	std::string getValue() const
 	{
 		return value;
 	}
+
 private:
 	std::string value;
 };
@@ -214,50 +210,42 @@ private:
 class StringExpr : public Expression {
 public:
 	StringExpr(std::string value)
-		: value(value)
-	{
-	}
+		: Expression(Expression::StringExpr),
+		  value(value)
+	{ }
 
 	virtual ~StringExpr() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	std::string getValue() const
 	{
 		return value;
 	}
+
 private:
 	std::string value;
 };
 
 class SubscriptExpr : public Expression {
 public:
-	SubscriptExpr(uptr<Expression> array,
-	              uptr<Expression> expr)
-		: arrayExpr(std::move(array)),
+	SubscriptExpr(uptr<Expression> array, uptr<Expression> expr)
+		: Expression(Expression::SubscriptExpr),
+	          arrayExpr(std::move(array)),
 		  subscriptExpr(std::move(expr))
 	{
 	}
 
 	virtual ~SubscriptExpr() = default;
 
-	virtual Expression& array() const
+	Expression& array() const
 	{
 		return *arrayExpr;
 	}
 
-	virtual Expression& subscript()
+	Expression& subscript()
 	{
 		return *subscriptExpr;
 	}
 
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 private:
 	uptr<Expression> arrayExpr;
 	uptr<Expression> subscriptExpr;
@@ -269,16 +257,12 @@ public:
 	typedef std::vector<uptr<Expression>> InitList;
 
 	ArrayInitializer(InitList initList)
-		: exprs(std::move(initList))
+		: Expression(Expression::ArrayInitializer),
+		  exprs(std::move(initList))
 	{
 	}
 
 	virtual ~ArrayInitializer() = default;
-
-	virtual void accept(tree::Visitor& visitor)
-	{
-		visitor.visit(*this);
-	}
 
 	InitList& initList()
 	{
@@ -289,6 +273,7 @@ public:
 	{
 		return exprs.size();
 	}
+
 private:
 	InitList exprs;
 };
