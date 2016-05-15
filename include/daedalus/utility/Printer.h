@@ -9,13 +9,12 @@
 #ifndef Daedalus_Printer
 #define Daedalus_Printer
 #include <aw/io/WriteStream.h>
-#include <daedalus/syntax/Visitor.h>
 namespace daedalus {
 using namespace aw;
-class Printer : public tree::Visitor {
+class Printer {
 public:
 	Printer(io::WriteStream& out);
-	virtual ~Printer() = default;
+	~Printer() = default;
 
 	void visit(tree::Declaration& node);
 
@@ -37,15 +36,17 @@ public:
 	void visit(tree::BreakStatement& node);
 	void visit(tree::ContinueStatement& node);
 
-	virtual void visit(tree::NumberExpr& node);
-	virtual void visit(tree::StringExpr& node);
-	virtual void visit(tree::IdentifierExpr& node);
-	virtual void visit(tree::ArrayInitializer& node);
-	virtual void visit(tree::CallExpr& node);
-	virtual void visit(tree::FieldExpr& node);
-	virtual void visit(tree::SubscriptExpr& node);
-	virtual void visit(tree::UnaryExpr& node);
-	virtual void visit(tree::BinaryExpr& node);
+	void visit(tree::Expression& node);
+
+	void visit(tree::NumberExpr& node);
+	void visit(tree::StringExpr& node);
+	void visit(tree::IdentifierExpr& node);
+	void visit(tree::ArrayInitializer& node);
+	void visit(tree::CallExpr& node);
+	void visit(tree::FieldExpr& node);
+	void visit(tree::SubscriptExpr& node);
+	void visit(tree::UnaryExpr& node);
+	void visit(tree::BinaryExpr& node);
 
 private:
 	void printSignature(tree::FunctionProto& node);

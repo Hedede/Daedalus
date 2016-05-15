@@ -168,12 +168,13 @@ void Printer::visit(tree::Variable& node)
 	write(node.name());
 	if (node.sizeExpr()) {
 		writer.put('[');
-		node.sizeExpr()->accept(*this);
+		visit(*node.sizeExpr());
 		writer.put(']');
 	}
-	if (node.initializer()) {
-		node.initializer()->accept(*this);
-	}
+
+	if (node.initializer())
+		visit(*node.initializer());
+
 	end();
 }
 
@@ -216,7 +217,7 @@ void Printer::visit(tree::IfStatement& node)
 {
 	start("if");
 	
-	node.condition().accept(*this);
+	visit(node.condition());
 
 	start("then");
 	visit(node.thenBranch());
@@ -233,7 +234,7 @@ void Printer::visit(tree::IfStatement& node)
 void Printer::visit(tree::WhileStatement& node)
 {
 	start("while");
-	node.condition().accept(*this);
+	visit(node.condition());
 
 	start("");
 	visit(node.body());
@@ -247,7 +248,7 @@ void Printer::visit(tree::DoStatement& node)
 	visit(node.body());
 	end();
 	write("while");
-	node.condition().accept(*this);
+	visit(node.condition());
 	end();
 }
 void Printer::visit(tree::BreakStatement& node)
@@ -266,7 +267,7 @@ void Printer::visit(tree::ReturnStatement& node)
 	startInline("return");
 	
 	if (node.expression())
-		node.expression()->accept(*this);
+		visit(*node.expression());
 
 	endInline();
 }
@@ -290,8 +291,8 @@ void Printer::visit(tree::Statement& node)
 		return visit(static_cast<tree::BreakStatement&>(node));
 	case tree::Statement::ContinueStatement:
 		return visit(static_cast<tree::ContinueStatement&>(node));
-	case tree::Statement::Expr:
-		return static_cast<tree::Expression&>(node).accept(*this);
+	case tree::Statement::ExprStatement:
+		return visit(static_cast<tree::ExprStatement&>(node).expression());
 	}
 }
 
@@ -315,20 +316,18 @@ void Printer::visit(tree::IdentifierExpr& node)
 void Printer::visit(tree::ArrayInitializer& node)
 {
 	startInline("{}");
-	for (auto& arg : node.initList()) {
-		arg->accept(*this);
-	}
+	for (auto& arg : node.initList())
+		visit(*arg);
 	endInline();
 }
 
 void Printer::visit(tree::CallExpr& node)
 {
-	startInline(node.getFunction());
+	startInline(node.function());
 	
 	startInline("");
-	for (auto& arg : node.getArguments()) {
-		arg->accept(*this);
-	}
+	for (auto& arg : node.arguments())
+		visit(*arg);
 	endInline();
 	endInline();
 }
@@ -344,8 +343,8 @@ void Printer::visit(tree::FieldExpr& node)
 void Printer::visit(tree::SubscriptExpr& node)
 {
 	startInline("[]");
-	node.array().accept(*this);
-	node.subscript().accept(*this);
+	visit(node.array());
+	visit(node.subscript());
 	endInline();
 }
 
@@ -353,7 +352,7 @@ void Printer::visit(tree::UnaryExpr& node)
 {
 	std::string const tmp = spellToken(Token::Kind(node.getOperation()));
 	startInline(tmp);
-	node.getOperand().accept(*this);
+	visit(node.getOperand());
 	endInline();
 }
 
@@ -361,8 +360,32 @@ void Printer::visit(tree::BinaryExpr& node)
 {
 	std::string const tmp = spellToken(Token::Kind(node.getOperation()));
 	startInline(tmp);
-	node.getLHS().accept(*this);
-	node.getRHS().accept(*this);
+	visit(node.getLHS());
+	visit(node.getRHS());
 	endInline();
+}
+
+void Printer::visit(tree::Expression& node)
+{
+	switch(node.kind()) {
+	case tree::Expression::NumberExpr:
+		return visit(static_cast<tree::NumberExpr&>(node));
+	case tree::Expression::StringExpr:
+		return visit(static_cast<tree::StringExpr&>(node));
+	case tree::Expression::IdentifierExpr:
+		return visit(static_cast<tree::IdentifierExpr&>(node));
+	case tree::Expression::ArrayInitializer:
+		return visit(static_cast<tree::ArrayInitializer&>(node));
+	case tree::Expression::CallExpr:
+		return visit(static_cast<tree::CallExpr&>(node));
+	case tree::Expression::FieldExpr:
+		return visit(static_cast<tree::FieldExpr&>(node));
+	case tree::Expression::SubscriptExpr:
+		return visit(static_cast<tree::SubscriptExpr&>(node));
+	case tree::Expression::UnaryExpr:
+		return visit(static_cast<tree::UnaryExpr&>(node));
+	case tree::Expression::BinaryExpr:
+		return visit(static_cast<tree::BinaryExpr&>(node));
+	}
 }
 } // namespace daedalus
