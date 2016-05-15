@@ -487,7 +487,7 @@ Parser::parseExprStatement()
 		return error(diag, token, Diagnostic::ExpectedSemicolon,
 		             "expression");
 
-	return expr;
+	return std::make_unique<tree::ExprStatement>(std::move(expr));
 }
 
 uptr<tree::StatementBlock>

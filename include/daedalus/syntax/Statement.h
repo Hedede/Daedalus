@@ -27,7 +27,7 @@ public:
 		BreakStatement,
 		ContinueStatement,
 		ReturnStatement,
-		Expr,
+		ExprStatement,
 	};
 
 	Kind kind() const
@@ -45,6 +45,23 @@ private:
 };
 
 class Expression;
+
+struct ExprStatement : Statement {
+	ExprStatement(uptr<Expression> expr)
+		: Statement(Statement::ExprStatement),
+		  expr(std::move(expr))
+	{ }
+
+	virtual ~ExprStatement() = default;
+
+	Expression& expression()
+	{
+		return *expr;
+	}
+
+private:
+	uptr<Expression> expr;
+};
 
 using StatementList = std::vector<uptr<Statement>>;
 
