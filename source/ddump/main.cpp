@@ -110,19 +110,21 @@ void printSym(std::istream& is)
 		}
 		break;
 	case 5:
+	case 6:
 	case 7:
 		{
 		unsigned value;
 		is.read((char*)&value,4);
 		if ((flags & 1) && !(flags & 8))
 			funcs[value] = name;
+		std::cout << value;
 		break;
 		}
 	case 4:
-	case 6:
 		{
 		int value;
 		is.read((char*)&value,4);
+		std::cout << value;
 		break;
 		}
 	}
