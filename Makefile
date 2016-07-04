@@ -5,3 +5,6 @@ daedalus:
 
 daedalusc:
 	@ $(MAKE) -C 'source/daedalusc' $(target)
+
+ddump:
+	@ $(MAKE) -C 'source/ddump' $(target)
