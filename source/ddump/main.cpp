@@ -80,55 +80,62 @@ void printSym(std::istream& is)
 	std::cout << "Count: " << ele << "\n";
 
 	if (!(flags & 4)) {
-	std::cout << "Value: ";
-	switch (type) {
-	case 1:
-		for (unsigned i = 0; i < ele; ++i) {
-			float value;
-			is.read((char*)&value,4);
-			std::cout << value;
-			if (i < ele - 1)
-				std::cout << ", ";
+		std::cout << "Value: ";
+		switch (type) {
+		case 1:
+			for (unsigned i = 0; i < ele; ++i) {
+				float value;
+				is.read((char*)&value,4);
+				std::cout << value;
+				if (i < ele - 1)
+					std::cout << ", ";
+			}
+			break;
+		case 2:
+			for (unsigned i = 0; i < ele; ++i) {
+				int value;
+				is.read((char*)&value,4);
+				std::cout << value;
+				if (i < ele - 1)
+					std::cout << ", ";
+			}
+			break;
+		case 3:
+			for (unsigned i = 0; i < ele; ++i) {
+				std::string value;
+				std::getline(is, value, '\n');
+				std::cout << value;
+				if (i < ele - 1)
+					std::cout << ", ";
+			}
+			break;
+		case 4:
+			{
+				int value;
+				is.read((char*)&value,4);
+				std::cout << value;
+				break;
+			}
+		case 5:
+			{
+				unsigned value;
+				is.read((char*)&value,4);
+				if ((flags & 1) && !(flags & 8))
+					funcs[value] = name;
+				std::cout << value;
+				break;
+			}
+		case 6:
+		case 7:
+			{
+				unsigned value;
+				is.read((char*)&value,4);
+				funcs[value] = name;
+				std::cout << value;
+				break;
+			}
 		}
-		break;
-	case 2:
-		for (unsigned i = 0; i < ele; ++i) {
-			int value;
-			is.read((char*)&value,4);
-			std::cout << value;
-			if (i < ele - 1)
-				std::cout << ", ";
-		}
-		break;
-	case 3:
-		for (unsigned i = 0; i < ele; ++i) {
-			std::string value;
-			std::getline(is, value, '\n');
-			std::cout << value;
-			if (i < ele - 1)
-				std::cout << ", ";
-		}
-		break;
-	case 5:
-	case 6:
-	case 7:
-		{
-		unsigned value;
-		is.read((char*)&value,4);
-		if ((flags & 1) && !(flags & 8))
-			funcs[value] = name;
-		std::cout << value;
-		break;
-		}
-	case 4:
-		{
-		int value;
-		is.read((char*)&value,4);
-		std::cout << value;
-		break;
-		}
-	}
-	std::cout << "\n";
+		std::cout << "\n";
 	}
 
 	int parent;
