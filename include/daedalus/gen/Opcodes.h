@@ -16,6 +16,7 @@ enum class Opcode {
 	Div = 3,
 	Mod = 4,
 	Or  = 5,
+	And = 6,
 	Less    = 7,
 	Greater = 8,
 	Assign  = 9,
@@ -52,5 +53,54 @@ enum class Opcode {
 	SelectInst  = 80,
 	ArrayVar    = 0xF5,
 };
+
+std::string opcodeString(Opcode op)
+{
+	switch (op) {
+		case Opcode::Add:         return "Add";
+		case Opcode::Sub:         return "Sub";
+		case Opcode::Mul:         return "Mul";
+		case Opcode::Div:         return "Div";
+		case Opcode::Mod:         return "Mod";
+		case Opcode::Or:          return "Or";
+		case Opcode::And:         return "And";
+		case Opcode::Less:        return "Less";
+		case Opcode::Greater:     return "Greater";
+		case Opcode::Assign:      return "Assign";
+		case Opcode::LogicalOr:   return "LogicalOr";
+		case Opcode::LogicalAnd:  return "LogicalAnd";
+		case Opcode::ShiftL:      return "ShiftL";
+		case Opcode::ShiftR:      return "ShiftR";
+		case Opcode::Leq:         return "Leq";
+		case Opcode::Eq:          return "Eq";
+		case Opcode::Neq:         return "Neq";
+		case Opcode::Geq:         return "Geq";
+		case Opcode::AssignAdd:   return "AssignAdd";
+		case Opcode::AssignSub:   return "AssignSub";
+		case Opcode::AssignMul:   return "AssignMul";
+		case Opcode::AssignDiv:   return "AssignDiv";
+		case Opcode::Plus:        return "Plus";
+		case Opcode::Minus:       return "Minus";
+		case Opcode::Not:         return "Not";
+		case Opcode::Neg:         return "Neg";
+		case Opcode::Ret:         return "Ret";
+		case Opcode::Call:        return "Call";
+		case Opcode::CallExtern:  return "CallExtern";
+		case Opcode::PushInt:     return "PushInt";
+		case Opcode::PushAdr:     return "PushAdr";
+		case Opcode::PushStr:     return "PushStr";
+		case Opcode::PushInst:    return "PushInst";
+		case Opcode::AssignStr:   return "AssignStr";
+		case Opcode::AssignStrp:  return "AssignStrp";
+		case Opcode::AssignFunc:  return "AssignFunc";
+		case Opcode::AssignFloat: return "AssignFloat";
+		case Opcode::AssignInst:  return "AssignInst";
+		case Opcode::Jmp:         return "Jmp";
+		case Opcode::JmpFalse:    return "JmpFalse";
+		case Opcode::SelectInst:  return "SelectInst";
+		case Opcode::ArrayVar:    return "ArrayVar";
+		default:                  return "UnknownOp";
+	}
+}
 } // namespace daedalus
 #endif//Daedalus_Opcodes
