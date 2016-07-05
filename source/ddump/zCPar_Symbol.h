@@ -179,26 +179,25 @@ struct zCPar_SymbolTable {
 void printSymbolData(std::ostream& os, zCPar_Symbol const& sym)
 {
 	size_t count = sym.count;
-	switch (sym.type) {
-	case zPAR_TYPE_FLOAT:
-	case zPAR_TYPE_INT:
-	case zPAR_TYPE_STRING:
-		if (count > 1) {
-			os << "{";
-			for (auto i = 0u; i < count; ++i) {
-				os << sym.data[i];
-				if (i < count - 1)
-					os << ", ";
-			}
-			os << "}";
-		} else if (count) {
-			os << sym.data[0];
-		}
-		break;
-	default:
+	if (sym.type > zPAR_TYPE_STRING) {
 		os << sym.adr;
-		break;
-	};
+		return;
+	}
+
+	if (count == 1) {
+		os << sym.data[0];
+	} else if (count > 1) {
+		os << "{";
+		for (auto i = 0u; i < count; ++i) {
+			if (sym.type == zPAR_TYPE_STRING)
+				os << "\"" << sym.data[i] << "\"";
+			else
+				os << sym.data[i];
+			if (i < count - 1)
+				os << ", ";
+		}
+		os << "}";
+	}
 }
 
 void printSymbol(std::ostream& os, zCPar_Symbol const& sym)
