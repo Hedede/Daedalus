@@ -131,7 +131,8 @@ zCPar_Symbol readSymbol(std::istream& is)
 		line,
 		line_count,
 		pos,
-		size
+		size,
+		offset
 	};
 
 	if (!(flags & zPAR_FLAG_CLASSVAR))
