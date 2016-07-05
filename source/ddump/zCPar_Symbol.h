@@ -190,7 +190,7 @@ void printSymbolData(std::ostream& os, zCPar_Symbol const& sym)
 					os << ", ";
 			}
 			os << "}";
-		} else {
+		} else if (count) {
 			os << sym.data[0];
 		}
 		break;
