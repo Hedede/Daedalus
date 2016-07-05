@@ -71,7 +71,7 @@ private:
 	uptr<tree::Declaration> parseClass();
 	uptr<tree::Prototype> parsePrototype();
 	uptr<tree::Instance> parseInstance();
-	uptr<tree::Variable> parseVariable(bool isConst, bool array = false);
+	uptr<tree::Variable> parseVariable(bool isConst);
 	uptr<tree::Declaration> parseGlobalVar();
 	uptr<tree::Declaration> parseLocalVar();
 	uptr<tree::Declaration> parseConstant();

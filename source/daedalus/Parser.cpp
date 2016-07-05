@@ -89,7 +89,7 @@ Parser::parseDeclaration()
  * variableDecl ::= 'var' type id
  */
 uptr<tree::Variable>
-Parser::parseVariable(bool isConst, bool array)
+Parser::parseVariable(bool isConst)
 {
 	// Read variable type
 	if (!isTypeName(token))
@@ -107,9 +107,6 @@ Parser::parseVariable(bool isConst, bool array)
 	auto var = std::make_unique<tree::Variable>(name, isConst);
 
 	if (match(Token::l_bracket)) {
-		if (!array)
-			return error(diag, token, Diagnostic::ArrayNotAllowed);
-
 		auto size_expr = parseExpression();
 		if (!size_expr)
 			return nullptr;
@@ -129,7 +126,7 @@ Parser::parseGlobalVar()
 {
 	getNextToken(); // consume 'var';
 
-	auto var = parseVariable(false, true);
+	auto var = parseVariable(false);
 	if (!var)
 		return nullptr;
 
@@ -145,7 +142,7 @@ Parser::parseLocalVar()
 {
 	getNextToken(); // consume 'var';
 
-	auto var = parseVariable(false, true);
+	auto var = parseVariable(false);
 	if (!var)
 		return nullptr;
 
@@ -172,7 +169,7 @@ Parser::parseConstant()
 {
 	getNextToken(); // consume 'const';
 
-	auto var = parseVariable(true, true);
+	auto var = parseVariable(true);
 	if (!var)
 		return nullptr;
 
@@ -259,6 +256,8 @@ Parser::parseFunctionPrototype()
 		auto arg = parseVariable(false);
 		if (!arg)
 			return nullptr;
+		if (arg->isArray())
+			return error(diag, token, Diagnostic::ArrayNotAllowed);
 
 		args.push_back(std::move(arg));
 
@@ -326,7 +325,7 @@ Parser::parseClass()
 	// Class members
 	std::vector<uptr<tree::Variable>> members;
 	while (match(Token::kw_var)) {
-		auto var = parseVariable(false, true);
+		auto var = parseVariable(false);
 		if (var == nullptr)
 			return nullptr;
 

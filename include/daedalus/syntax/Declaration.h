@@ -62,6 +62,11 @@ public:
 		return id;
 	}
 
+	bool isArray() const
+	{
+		return sizeExpr() != nullptr;
+	}
+
 	bool isConst()
 	{
 		return constant;
@@ -83,6 +88,7 @@ public:
 	}
 
 	// TODO: ArrayDecl : public Variable?
+	// XXX: nope, will be part of type system
 	Expression* sizeExpr() const
 	{
 		return size_expr.get();
