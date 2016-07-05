@@ -10,6 +10,7 @@
 #include <iostream>
 #include <iomanip>
 #include "zCPar_Symbol.h"
+#include "Instruction.h"
 namespace daedalus {
 //using namespace aw;
 
@@ -37,78 +38,49 @@ int main(char* argv)
 
 	printSymbols(std::cout, symtab);
 
-	auto& funcs = symtab.funcMap;
-	auto& syms  = symtab.syms;
-	int stacksize;
-	file.read((char*)&stacksize,4);
+	unsigned stacksize;
+	std::vector<Instruction> ops;
+	{
+		std::vector<char> stack;
+
+		file.read((char*)&stacksize,4);
+
+		stack.resize(stacksize);
+		file.read(stack.data(), stacksize);
+
+		char const* begin = stack.data();
+		char const* end   = stack.data() + stacksize;
+
+		while (begin != end)
+			ops.push_back(readOp(begin, end));
+	}
+
 	std::cout << "------ STACK ------\n";
 	std::cout << "stack size: " << stacksize << "\n";
+
+	unsigned adr = 0;
 	size_t width = std::to_string(stacksize).size();
-	for (int i = 0; i < stacksize;) {
-		unsigned char byte;
-		file.read((char*)&byte,1);
-		
-		auto func = symtab.findFunc(i);
+
+	auto osflags = std::cout.flags();
+	auto oswidth = std::cout.width();
+	auto osfill  = std::cout.fill();
+	for (auto op : ops) {
+		auto func = symtab.findFunc(adr);
 		if (!func.empty())
 			std::cout << func << ":\n";
 
-		using namespace std;
-		Opcode op{Opcode(byte)};
-		std::cout << setfill('0') << setw(width) << i << ": ";
-		std::cout << std::hex << setw(2) << int(op) << ": ";
-		std::cout << std::dec << setfill(' ') << setw(0) << opcodeString(op);
+		std::cout << std::setfill('0') << std::setw(width) << adr << ": ";
 
-		switch (op) {
-		default:
-			++i;
-			break;
-		case Opcode::Call:
-			{
-				int value;
-				file.read((char*)&value,4);
-				std::cout << " " << value;
-				std::cout << " (" << symtab.findFunc(value) << ")";
-				i += 1 + 4;
-			}
-			break;
-		case Opcode::CallExtern:
-		case Opcode::PushAdr:
-		case Opcode::SelectInst:
-			{
-				unsigned value;
-				file.read((char*)&value,4);
-				std::cout << " " << value;
-				std::cout << " (" << syms[value].name << ")";
-				i += 1 + 4;
-			}
-			break;
-		case Opcode::PushInt:
-		case Opcode::PushStr:
-		case Opcode::PushInst:
-		case Opcode::Jmp:
-		case Opcode::JmpFalse:
-			{
-				int value;
-				file.read((char*)&value,4);
-				std::cout << " " << value;
-				i += 1 + 4;
-			}
-			break;
-		case Opcode::ArrayVar:
-			{
-				int value;
-				char value2;
-				file.read((char*)&value,4);
-				file.read((char*)&value2,1);
-				std::cout << " " << value;
-				std::cout << " (" << syms[value].name << ")";
-				std::cout << " " << unsigned(value2);
-				i += 1 + 4 + 1;
-			}
-		};
+		std::cout.flags(osflags);
+		std::cout.width(oswidth);
+		std::cout.fill(osfill);
 
+		printOp(std::cout, op);
+		printRef(std::cout, op, symtab);
+
+		adr += opSize(op.op);
 		std::cout << "\n";
-	}
+	};
 }
 } // namespace daedalus
 

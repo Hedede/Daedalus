@@ -14,7 +14,6 @@
 #include <istream>
 #include <ostream>
 #include <aw/types/types.h>
-#include <daedalus/gen/Opcodes.h>
 
 enum zPAR_FLAGS : aw::u8 {
 	zPAR_FLAG_CONST       = 1,
@@ -151,7 +150,7 @@ struct zCPar_SymbolTable {
 	std::vector<unsigned> indices;
 	std::unordered_map<int, size_t> funcMap;
 
-	std::string findFunc(int offset)
+	std::string findFunc(int offset) const
 	{
 		auto found = funcMap.find(offset);
 		if (found != std::end(funcMap))
