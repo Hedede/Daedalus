@@ -10,6 +10,7 @@
 #define Daedalus_Declaration
 #include <vector>
 #include <aw/types/types.h>
+#include <daedalus/semantic/Type.h>
 namespace daedalus {
 using namespace aw;
 namespace tree {
@@ -48,11 +49,10 @@ using DeclarationList = std::vector<uptr<Declaration>>;
 
 class Expression;
 
-class Variable : public Declaration {
-public:
-	Variable(std::string id, bool is_const)
+struct Variable : Declaration {
+	Variable(std::string id, Type type)
 		: Declaration(Declaration::Variable),
-		  id(id), constant(is_const)
+		  id(id), _type(type)
 	{ }
 
 	virtual ~Variable() = default;
@@ -62,19 +62,24 @@ public:
 		return id;
 	}
 
+	Type type() const
+	{
+		return _type;
+	}
+
 	bool isArray() const
 	{
-		return sizeExpr() != nullptr;
+		return _type.count > 1;
 	}
 
 	bool isConst()
 	{
-		return constant;
+		return _type.isConst;
 	}
 
 	void setConst(bool cnst)
 	{
-		constant = cnst;
+		_type.isConst = cnst;
 	}
 
 	Expression* initializer()
@@ -101,7 +106,7 @@ public:
 
 private:
 	std::string id;
-	bool constant;
+	Type _type;
 	uptr<Expression> init_expr = nullptr;
 	uptr<Expression> size_expr = nullptr;
 };
@@ -109,40 +114,38 @@ private:
 typedef std::vector<std::unique_ptr<Variable>> VarList;
 
 // TODO: merge with Function
-class FunctionProto : public Declaration {
-public:
-	FunctionProto(std::string id, std::string returnType, VarList args)
+struct FunctionProto : Declaration {
+	FunctionProto(std::string id, Type returnType, VarList args)
 		: Declaration(Declaration::FunctionProto),
-		  name(id), args(std::move(args)), returnType(returnType)
+		  _name(id), args(std::move(args)), _returnType(returnType)
 	{ }
 
 	virtual ~FunctionProto() = default;
 
-	std::string getName() const
+	std::string name() const
 	{
-		return name;
+		return _name;
 	}
 
-	std::string getReturnType() const
+	Type returnType() const
 	{
-		return returnType;
+		return _returnType;
 	}
 
-	VarList& getArguments()
+	VarList& arguments()
 	{
 		return args;
 	}
 
 private:
-	std::string name;
-	std::string returnType;
+	std::string _name;
+	Type _returnType;
 	VarList args;
 };
 
 class StatementBlock;
 
-class Function : public Declaration {
-public:
+struct Function : Declaration {
 	Function(uptr<tree::FunctionProto> proto,
 		 uptr<StatementBlock> body)
 		: Declaration(Declaration::Function),

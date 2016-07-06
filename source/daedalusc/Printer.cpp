@@ -95,13 +95,13 @@ void Printer::end()
 
 void Printer::printSignature(tree::FunctionProto& node)
 {
-	write(node.getReturnType());
-	write(node.getName());
+	write(node.returnType().baseType->name);
+	write(node.name());
 
 	start();
 	endLine();
 
-	for (auto& arg : node.getArguments())
+	for (auto& arg : node.arguments())
 		visit(*arg);
 
 	end();
@@ -165,6 +165,8 @@ void Printer::visit(tree::Class& node)
 void Printer::visit(tree::Variable& node)
 {
 	start(node.isConst() ? "const" : "var");
+	if (auto type = node.type().baseType)
+		write(type->name);
 	write(node.name());
 	if (node.sizeExpr()) {
 		writer.put('[');

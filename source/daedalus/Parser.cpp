@@ -85,16 +85,21 @@ Parser::parseDeclaration()
 	return decl;
 }
 
+TypeDef* Parser::readType()
+{
+	if (!isTypeName(token))
+		return nullptr;
+
+	//return symtab.find(token);
+	return new TypeDef{token.data()};
+}
+
 /*
  * variableDecl ::= 'var' type id
  */
 uptr<tree::Variable>
-Parser::parseVariable(bool isConst)
+Parser::parseVariable(Type type)
 {
-	// Read variable type
-	if (!isTypeName(token))
-		return nullptr;
-
 	// Read variable name
 	if (!isIdentifier(getNextToken()))
 		return error(diag, token, Diagnostic::UnexpectedToken,
@@ -104,7 +109,7 @@ Parser::parseVariable(bool isConst)
 	std::string name = token.data();
 	getNextToken(); // consume identifier
 
-	auto var = std::make_unique<tree::Variable>(name, isConst);
+	auto var = std::make_unique<tree::Variable>(name, type);
 
 	if (match(Token::l_bracket)) {
 		auto size_expr = parseExpression();
@@ -126,7 +131,14 @@ Parser::parseGlobalVar()
 {
 	getNextToken(); // consume 'var';
 
-	auto var = parseVariable(false);
+	auto type = readType();
+	if (!type)
+		return error(diag, token, Diagnostic::UnexpectedToken,
+		             token.data(), "type name");
+
+	Type var_type{type, false, 1};
+
+	auto var = parseVariable(var_type);
 	if (!var)
 		return nullptr;
 
@@ -142,12 +154,19 @@ Parser::parseLocalVar()
 {
 	getNextToken(); // consume 'var';
 
-	auto var = parseVariable(false);
+	auto type = readType();
+	if (!type)
+		return error(diag, token, Diagnostic::UnexpectedToken,
+		             token.data(), "type name");
+
+	Type var_type{type, false, 1};
+
+	auto var = parseVariable(var_type);
 	if (!var)
 		return nullptr;
 
 	// allow initializer for non-array vars
-	if (!var->sizeExpr() && match(Token::equal)) {
+	if (!var->isArray() && match(Token::equal)) {
 		auto initializer = parseExpression();
 		if (!initializer)
 			return nullptr;
@@ -169,7 +188,14 @@ Parser::parseConstant()
 {
 	getNextToken(); // consume 'const';
 
-	auto var = parseVariable(true);
+	auto type = readType();
+	if (!type)
+		return error(diag, token, Diagnostic::UnexpectedToken,
+		             token.data(), "type name");
+
+	Type var_type{type, true, 1};
+
+	auto var = parseVariable(var_type);
 	if (!var)
 		return nullptr;
 
@@ -229,11 +255,12 @@ Parser::parseArrayInitializer()
 uptr<tree::FunctionProto>
 Parser::parseFunctionPrototype()
 {
-	// Return type
-	if (!isTypeName(token))
-		return nullptr;
+	auto type = readType();
+	if (!type)
+		return error(diag, token, Diagnostic::UnexpectedToken,
+		             token.data(), "type name");
 
-	std::string ret = token.data();
+	Type ret{type, false, 1};
 
 	// Function name
 	if (!isIdentifier(getNextToken()))
@@ -253,7 +280,13 @@ Parser::parseFunctionPrototype()
 	std::vector<uptr<tree::Variable>> args;
 
 	while (match(Token::kw_var)) {
-		auto arg = parseVariable(false);
+		auto type = readType();
+		if (!type)
+			return error(diag, token, Diagnostic::UnexpectedToken,
+			             token.data(), "type name");
+
+		Type arg_type{type, false, 1};
+		auto arg = parseVariable(arg_type);
 		if (!arg)
 			return nullptr;
 		if (arg->isArray())
@@ -325,7 +358,13 @@ Parser::parseClass()
 	// Class members
 	std::vector<uptr<tree::Variable>> members;
 	while (match(Token::kw_var)) {
-		auto var = parseVariable(false);
+		auto type = readType();
+		if (!type)
+			return error(diag, token, Diagnostic::UnexpectedToken,
+			             token.data(), "type name");
+
+		Type var_type{type, false, 1};
+		auto var = parseVariable(var_type);
 		if (var == nullptr)
 			return nullptr;
 

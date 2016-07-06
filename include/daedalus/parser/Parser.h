@@ -66,12 +66,14 @@ private:
 	 */
 	bool match(Token::Kind expected);
 
+	TypeDef* readType();
+
 	uptr<tree::FunctionProto> parseFunctionPrototype();
 	uptr<tree::Declaration> parseFunctionDefinition();
 	uptr<tree::Declaration> parseClass();
 	uptr<tree::Prototype> parsePrototype();
 	uptr<tree::Instance> parseInstance();
-	uptr<tree::Variable> parseVariable(bool isConst);
+	uptr<tree::Variable> parseVariable(Type type);
 	uptr<tree::Declaration> parseGlobalVar();
 	uptr<tree::Declaration> parseLocalVar();
 	uptr<tree::Declaration> parseConstant();

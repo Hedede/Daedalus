@@ -16,6 +16,9 @@ class Function;
 };
 
 struct TypeDef;
+/*!
+ * Reference to a type, with added type modifiers.
+ */
 struct Type {
 	TypeDef* baseType;
 	bool isConst;
