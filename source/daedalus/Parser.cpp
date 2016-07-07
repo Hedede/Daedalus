@@ -88,10 +88,13 @@ Parser::parseDeclaration()
 TypeDef* Parser::readType()
 {
 	if (!isTypeName(token))
-		return nullptr;
+		return error(diag, token, Diagnostic::UnexpectedToken, token.data(), "type name");
 
 	//return symtab.find(token);
-	return new TypeDef{token.data()};
+	auto type = new TypeDef{token.data()};
+	if (!type)
+		return error(diag, token, Diagnostic::UnknownType, token.data());
+	return type;
 }
 
 /*
@@ -133,8 +136,7 @@ Parser::parseGlobalVar()
 
 	auto type = readType();
 	if (!type)
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.data(), "type name");
+		return nullptr;
 
 	Type var_type{type, false, 1};
 
@@ -156,8 +158,7 @@ Parser::parseLocalVar()
 
 	auto type = readType();
 	if (!type)
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.data(), "type name");
+		return nullptr;
 
 	Type var_type{type, false, 1};
 
@@ -190,8 +191,7 @@ Parser::parseConstant()
 
 	auto type = readType();
 	if (!type)
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.data(), "type name");
+		return nullptr;
 
 	Type var_type{type, true, 1};
 
@@ -257,8 +257,7 @@ Parser::parseFunctionPrototype()
 {
 	auto type = readType();
 	if (!type)
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             token.data(), "type name");
+		return nullptr;
 
 	Type ret{type, false, 1};
 
@@ -282,8 +281,7 @@ Parser::parseFunctionPrototype()
 	while (match(Token::kw_var)) {
 		auto type = readType();
 		if (!type)
-			return error(diag, token, Diagnostic::UnexpectedToken,
-			             token.data(), "type name");
+			return nullptr;
 
 		Type arg_type{type, false, 1};
 		auto arg = parseVariable(arg_type);
