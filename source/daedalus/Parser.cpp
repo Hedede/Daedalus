@@ -94,6 +94,9 @@ TypeDef* Parser::readType()
 	auto type = new TypeDef{token.data()};
 	if (!type)
 		return error(diag, token, Diagnostic::UnknownType);
+
+	getNextToken(); // consume identifier
+
 	return type;
 }
 
@@ -104,7 +107,7 @@ uptr<tree::Variable>
 Parser::parseVariable(Type type)
 {
 	// Read variable name
-	if (!isIdentifier(getNextToken()))
+	if (!isIdentifier(token))
 		return error(diag, token, Diagnostic::UnexpectedToken, "identifier");
 	
 	// TODO: symbol table lookup
@@ -433,6 +436,8 @@ Parser::parseInstance()
 
 	std::string base = token.data();
 	getNextToken();
+
+	// TODO: tok_comma
 
 	if (!match(Token::r_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
