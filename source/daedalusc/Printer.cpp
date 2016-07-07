@@ -6,6 +6,7 @@
  * This is free software: you are free to change and redistribute it.
  * There is NO WARRANTY, to the extent permitted by law.
  */
+#include <aw/utility/ranges/slice.h>
 #include <daedalus/syntax/Declaration.h>
 #include <daedalus/syntax/Statement.h>
 #include <daedalus/syntax/Expression.h>
@@ -142,7 +143,14 @@ void Printer::visit(tree::Prototype& node)
 void Printer::visit(tree::Instance& node)
 {
 	start("instance");
+
+	write('(');
 	write(node.name());
+
+	for (auto name : aw::slice_range(node.nameList(),1))
+		write(name);
+	write(')');
+
 	write('(');
 	write(node.base());
 	write(')');

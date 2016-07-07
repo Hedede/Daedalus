@@ -427,8 +427,18 @@ Parser::parseInstance()
 		return error(diag, token, Diagnostic::UnexpectedToken,
 		             "instance name");
 
+	StringList names;
+
 	std::string name = token.data();
 	getNextToken(); // consume name;
+
+	while (match(Token::comma)) {
+		names.push_back(name);
+		name = token.data();
+		getNextToken();
+	}
+
+	names.push_back(name);
 
 	if (!match(Token::l_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
@@ -437,20 +447,19 @@ Parser::parseInstance()
 	std::string base = token.data();
 	getNextToken();
 
-	// TODO: tok_comma
-
 	if (!match(Token::r_paren))
 		return error(diag, token, Diagnostic::UnexpectedToken2,
 	                     Token::r_paren);
 
-	if (match(Token::semicolon))
-		return std::make_unique<tree::Instance>(name, base, nullptr);
+	uptr<tree::StatementBlock> body = nullptr;
 
-	auto body = parseStatementBlock();
-	if (!body)
-		return nullptr;
+	if (!match(Token::semicolon)) {
+		auto body = parseStatementBlock();
+		if (!body)
+			return nullptr;
+	}
 
-	return std::make_unique<tree::Instance>(name, base, std::move(body));
+	return std::make_unique<tree::Instance>(std::move(names), base, std::move(body));
 }
 
 uptr<tree::Statement>

@@ -12,6 +12,7 @@
 #include <aw/types/types.h>
 #include <daedalus/semantic/Type.h>
 namespace daedalus {
+using StringList = std::vector<std::string>;
 using namespace aw;
 namespace tree {
 /*!
@@ -235,19 +236,23 @@ protected:
 	uptr<StatementBlock> block;
 };
 
-class Instance : public Declaration {
-public:
-	Instance(std::string name, std::string base,
+struct Instance : Declaration {
+	Instance(StringList&& names, std::string base,
 	          uptr<StatementBlock> body)
 		: Declaration(Declaration::Instance),
-		  name_(name), base_(base), block(std::move(body))
+		  names(names), base_(base), block(std::move(body))
 	{ }
 
 	virtual ~Instance() = default;
 
 	std::string name() const
 	{
-		return name_;
+		return names.front();
+	}
+
+	StringList const& nameList() const
+	{
+		return names;
 	}
 
 	std::string base() const
@@ -261,7 +266,7 @@ public:
 	}
 
 protected:
-	std::string name_;
+	StringList names;
 	std::string base_;
 
 	uptr<StatementBlock> block;
