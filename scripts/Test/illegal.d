@@ -1,9 +1,18 @@
-func void f()
+class яOpechatko {
+	var void nonono;
+};
+
+func void !inval()
 {
-	f(2  варарар);
 }
+
 
 func ахтыморжуйморжовый function()
 {
 
+}
+
+func void f()
+{
+	f(2  варарар);
 }

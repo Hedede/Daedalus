@@ -14,24 +14,37 @@
 #endif
 #include <iostream> //temporary
 #include <aw/utility/string/compose.h>
+#include <daedalus/utility/Location.h>
 #include <daedalus/utility/Diagnostic.h>
 namespace daedalus {
 using namespace aw;
-class DiagnosticHelper {
-public:
+struct DiagnosticHelper {
 	DiagnosticHelper()
 	{
 	}
+
+	DiagnosticHelper(SourceBuffer& inputBuffer)
+		: buf(&inputBuffer)
+	{
+	}
+
+	// temporary
+	SourceBuffer* buf;
 
 	void report(Diagnostic diag)
 	{
 		assert(size_t(diag.id) < sizeof(diagMessages)/sizeof(char*));
 		auto msg = string::compose(diagMessages[diag.id], diag.args);
-		auto pos = diag.loc.pos;
+
+		auto pos = countLines(*buf, diag.loc.pos);
+
+		auto line   = pos.first;
+		auto column = pos.second;
+
 #ifdef _WINDOWS
-		fputs(stderr, compose("error:%0: %1", pos, msg));
+		fputs(stderr, compose("error:%0:%1: %2", line, column, msg));
 #else
-		std::cerr << "error:" << pos << ": " << msg << "\n";
+		std::cerr << "error:" << line << ":" << column << ": " << msg << "\n";
 #endif
 	}
 };

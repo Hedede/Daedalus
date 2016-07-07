@@ -45,7 +45,7 @@ int main(char** argv)
 	io::ReadFile file(argv[1]);
 	SourceBuffer buffer(file);
 	Lexer lexer(&buffer);
-	DiagnosticHelper diag;
+	DiagnosticHelper diag(buffer);
 	Parser parser(lexer, diag);
 
 	TestWriteStream out;
