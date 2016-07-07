@@ -81,6 +81,8 @@ int main(char* argv)
 		adr += opSize(op.op);
 		std::cout << "\n";
 	};
+
+	return EXIT_SUCCESS;
 }
 } // namespace daedalus
 

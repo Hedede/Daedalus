@@ -13,7 +13,7 @@ namespace daedalus {
 namespace tree {
 class Class;
 class Function;
-};
+}
 
 struct TypeDef;
 /*!

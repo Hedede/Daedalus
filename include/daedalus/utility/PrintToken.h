@@ -60,6 +60,8 @@ inline std::string spellToken(Token::Kind kind)
 #undef PUNCT
 #undef KEYWORD
 	}
+
+	return "";
 }
 
 #undef TOKEN_NAME

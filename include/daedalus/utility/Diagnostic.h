@@ -24,7 +24,7 @@ public:
 	};
 
 	Diagnostic(Location loc, ID id)
-		: id(id), loc(loc)
+		: loc(loc), id(id)
 	{
 	}
 

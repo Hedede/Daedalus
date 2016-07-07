@@ -23,18 +23,17 @@ struct OutputUnit {
 
 bool operator == (OutputUnit const& a, OutputUnit const& b)
 {
-	a.name == b.name;
+	return a.name == b.name;
 }
 
 bool operator < (OutputUnit const& a, OutputUnit const& b)
 {
-	a.name < b.name;
+	return a.name < b.name;
 }
 
 typedef std::set<OutputUnit> OutputUnitList;
 
-class Parser {
-public:
+struct Parser {
 	Parser(SourceBuffer& buf)
 		: buf(buf)
 	{

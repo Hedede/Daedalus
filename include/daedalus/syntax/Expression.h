@@ -145,8 +145,8 @@ public:
 	}
 
 private:
-	std::unique_ptr<Expression> operand;
 	int op;
+	std::unique_ptr<Expression> operand;
 };
 
 /*!
@@ -177,9 +177,9 @@ public:
 	}
 
 private:
+	int op;
 	std::unique_ptr<Expression> lhs;
 	std::unique_ptr<Expression> rhs;
-	int op;
 };
 
 /*!

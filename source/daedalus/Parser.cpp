@@ -9,6 +9,8 @@
 #include <cassert>
 #include <vector>
 
+#include <aw/utility/fold.h>
+
 #include <daedalus/syntax/Declaration.h>
 #include <daedalus/syntax/Statement.h>
 #include <daedalus/syntax/Expression.h>
@@ -16,6 +18,7 @@
 #include <daedalus/utility/PrintToken.h>
 #include <daedalus/utility/DiagnosticHelper.h>
 #include <daedalus/parser/Parser.h>
+
 namespace daedalus {
 bool isTypeName(Token tok)
 {
@@ -33,7 +36,7 @@ std::nullptr_t error(DiagnosticHelper& diag, Token tok,
 {
 	Diagnostic msg(tok.location(), id);
 	msg << tok.data();
-	int dummy[sizeof...(Args)] = { (msg << args, 0)... };
+	AW_FOLD(msg << args);
 	diag.report(msg);
 
 	return nullptr;

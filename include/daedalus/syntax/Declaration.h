@@ -118,7 +118,7 @@ typedef std::vector<std::unique_ptr<Variable>> VarList;
 struct FunctionProto : Declaration {
 	FunctionProto(std::string id, Type returnType, VarList args)
 		: Declaration(Declaration::FunctionProto),
-		  _name(id), args(std::move(args)), _returnType(returnType)
+		  _name(id), _returnType(returnType), args(std::move(args))
 	{ }
 
 	virtual ~FunctionProto() = default;
