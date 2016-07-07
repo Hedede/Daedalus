@@ -45,7 +45,25 @@ std::nullptr_t error(DiagnosticHelper& diag, Token tok,
 std::nullptr_t
 error_unexpected_token(DiagnosticHelper& diag, Token tok, Token::Kind expected)
 {
-	return error(diag, tok, Diagnostic::UnexpectedToken2, expected);
+	return error(diag, tok, Diagnostic::UnexpectedToken, expected);
+}
+
+std::nullptr_t
+error_expected_constant_initializer(DiagnosticHelper& diag, Token tok)
+{
+	return error(diag, tok, Diagnostic::ExpectedConstantInitializer);
+}
+
+std::nullptr_t
+error_expected_instance_name(DiagnosticHelper& diag, Token tok)
+{
+	return error(diag, tok, Diagnostic::ExpectedInstanceName);
+}
+
+std::nullptr_t
+error_expected_prototype_name(DiagnosticHelper& diag, Token tok)
+{
+	return error(diag, tok, Diagnostic::ExpectedPrototypeName);
 }
 
 std::nullptr_t
@@ -135,7 +153,7 @@ Parser::parseVariable(Type type)
 {
 	// Read variable name
 	if (!isIdentifier(token))
-		return error(diag, token, Diagnostic::UnexpectedToken, "identifier");
+		return error(diag, token, Diagnostic::ExpectedIdentifier);
 	
 	// TODO: symbol table lookup
 	std::string name = token.data();
@@ -227,8 +245,7 @@ Parser::parseConstant()
 
 	// Read constant initializer
 	if (!match(Token::equal))
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             "constant initializer");
+		return error_expected_constant_initializer(diag, token);
 
 	uptr<tree::Expression> initializer;
 	if (match(Token::l_brace))
@@ -286,8 +303,7 @@ Parser::parseFunctionPrototype()
 
 	// Function name
 	if (!isIdentifier(token))
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             "identifier");
+		return error(diag, token, Diagnostic::ExpectedIdentifier);
 
 	// TODO: symbol table lookup
 	std::string name = token.data();
@@ -318,9 +334,7 @@ Parser::parseFunctionPrototype()
 			break;
 
 		if (!match(Token::comma))
-			return error(diag, token,
-			             Diagnostic::UnexpectedToken2,
-			             Token::comma);
+			return error_unexpected_token(diag, token, Token::comma);
 	}
 
 	if (!match(Token::r_paren))
@@ -364,8 +378,7 @@ Parser::parseClass()
 {
 	// Class name
 	if (!isIdentifier(getNextToken()))
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             "class name");
+		return error(diag, token, Diagnostic::ExpectedIdentifier);
 
 	std::string name = token.data();
 
@@ -379,8 +392,7 @@ Parser::parseClass()
 	while (match(Token::kw_var)) {
 		auto type = readType();
 		if (!type)
-			return error(diag, token, Diagnostic::UnexpectedToken,
-			             "type name");
+			return nullptr;
 
 		Type var_type{type, false, 1};
 		auto var = parseVariable(var_type);
@@ -414,8 +426,7 @@ uptr<tree::Prototype>
 Parser::parsePrototype()
 {
 	if (!isIdentifier(getNextToken()))
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             "prototype name");
+		return error_expected_prototype_name(diag, token);
 
 	std::string name = token.data();
 	getNextToken(); // consume name;
@@ -440,8 +451,7 @@ uptr<tree::Instance>
 Parser::parseInstance()
 {
 	if (!isIdentifier(getNextToken()))
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             "instance name");
+		return error_expected_instance_name(diag, token);
 
 	StringList names;
 
@@ -700,8 +710,7 @@ Parser::parseParenExpr()
 }
 
 uptr<tree::Expression>
-Parser::parseBinaryExpr(uptr<tree::Expression> LHS,
-                        prec::Level minPrec)
+Parser::parseBinaryExpr(uptr<tree::Expression> LHS, prec::Level minPrec)
 {
 	while (1) {
 		prec::Level curPrec = getOperatorPrecedence(token);
@@ -766,9 +775,8 @@ Parser::parseIdentifierExpr()
 		id_expr = std::make_unique<tree::IdentifierExpr>(name);
 	}
 
-	if (match(Token::l_bracket)) {
+	if (match(Token::l_bracket))
 		id_expr = parseArraySubscript(std::move(id_expr));
-	}
 
 	// TODO: postfix operators
 
@@ -793,9 +801,7 @@ Parser::parseCallExpr(std::string func)
 				break;
 
 			if (!match(Token::comma))
-				return error(diag, token,
-				             Diagnostic::UnexpectedToken2,
-				             Token::comma);
+				return error_unexpected_token(diag, token, Token::comma);
 		}
 	}
 
@@ -821,8 +827,7 @@ uptr<tree::Expression>
 Parser::parseFieldAccess(std::string id)
 {
 	if (!isIdentifier(token))
-		return error(diag, token, Diagnostic::UnexpectedToken,
-		             "identifier");
+		return error(diag, token, Diagnostic::ExpectedIdentifier);
 
 	std::string field = token.data();
 
