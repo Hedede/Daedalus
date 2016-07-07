@@ -17,8 +17,7 @@ using namespace aw;
 /*!
  * Produces token stream from a source buffer.
  */
-class Lexer {
-public:
+struct Lexer {
 	Lexer(SourceBuffer* inputBuffer);
 
 	Token currentToken();
@@ -27,6 +26,7 @@ public:
 	 * Extract next token from stream
 	 */
 	Token nextToken();
+
 private:
 	void init();
 	char peek() const;

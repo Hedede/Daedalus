@@ -102,6 +102,7 @@ bool Lexer::lexIdentifier(Token& token)
 
 	token.setType(kind);
 	token.setData(start, cur);
+	token.setLocation(size_t(start - buf->begin()));
 	
 	return true;
 }
@@ -121,6 +122,7 @@ bool Lexer::lexNumericConstant(Token& token)
 
 	token.setData(start, cur);
 	token.setType(Token::numeric_constant);
+	token.setLocation(size_t(start - buf->begin()));
 
 	return true;
 }
@@ -139,6 +141,7 @@ bool Lexer::lexStringLiteral(Token& token)
 	// TODO: incomplete flag if cur == end
 	token.setData(start, cur);
 	token.setType(Token::string_literal);
+	token.setLocation(size_t(start - buf->begin()));
 
 	if (cur < end)
 		++cur; // consume '"'
@@ -153,6 +156,7 @@ bool Lexer::lexIllegalToken(Token& token)
 
 	token.setData(begin, cur);
 	token.setType(Token::illegal);
+	token.setLocation(size_t(begin - buf->begin()));
 
 	return true;
 }
