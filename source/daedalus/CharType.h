@@ -63,17 +63,17 @@ u8 types[] = {
 
 bool isNameChar(char c)
 {
-	return characters::types[c] & characters::Name;
+	return characters::types[(unsigned char)c] & characters::Name;
 }
 
 bool isNameBegin(char c)
 {
-	return characters::types[c] & characters::NameBegin;
+	return characters::types[(unsigned char)c] & characters::NameBegin;
 }
 
 bool isTokenBegin(char c)
 {
-	return characters::types[c] & characters::TokenBegin;
+	return characters::types[(unsigned char)c] & characters::TokenBegin;
 }
 } // namespace daedalus
 #endif//Daedalus_CharType
