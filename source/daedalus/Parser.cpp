@@ -46,9 +46,21 @@ error_unexpected_token(DiagnosticHelper& diag, Token tok, Token::Kind expected)
 }
 
 std::nullptr_t
-error_expected_semicolon(DiagnosticHelper& diag, Token tok, std::string after)
+error_expected_semicolon_after_expr(DiagnosticHelper& diag, Token tok)
 {
-	return error(diag, tok, Diagnostic::ExpectedSemicolon, after);
+	return error(diag, tok, Diagnostic::ExpectedSemicolonAfterExpr);
+}
+
+std::nullptr_t
+error_expected_semicolon_after_var(DiagnosticHelper& diag, Token tok)
+{
+	return error(diag, tok, Diagnostic::ExpectedSemicolonAfterVar);
+}
+
+std::nullptr_t
+error_expected_semicolon_after_do_while(DiagnosticHelper& diag, Token tok)
+{
+	return error(diag, tok, Diagnostic::ExpectedSemicolonAfterDoWhile);
 }
 
 bool Parser::match(Token::Kind expected)
@@ -160,7 +172,7 @@ Parser::parseGlobalVar()
 	if (match(Token::semicolon))
 		return var;
 
-	return error_expected_semicolon(diag, token, "variable declaration");
+	return error_expected_semicolon_after_var(diag, token);
 }
 
 uptr<tree::Declaration>
@@ -189,7 +201,7 @@ Parser::parseLocalVar()
 	if (match(Token::semicolon))
 		return var;
 
-	return error_expected_semicolon(diag, token, "variable declaration");
+	return error_expected_semicolon_after_var(diag, token);
 }
 
 /*
@@ -229,8 +241,7 @@ Parser::parseConstant()
 	if (match(Token::semicolon))
 		return var;
 
-	return error(diag, token, Diagnostic::ExpectedSemicolon,
-	             "variable declaration");
+	return error_expected_semicolon_after_var(diag, token);
 }
 
 uptr<tree::Expression>
@@ -387,7 +398,7 @@ Parser::parseClass()
 		}
 
 		if (!match(Token::semicolon))
-			return error_expected_semicolon(diag, token, "variable declaration");
+			return error_expected_semicolon_after_var(diag, token);
 	}
 
 	if (!match(Token::r_brace))
@@ -533,7 +544,7 @@ Parser::parseExprStatement()
 	auto expr = parseExpression();
 
 	if (!match(Token::semicolon))
-		return error_expected_semicolon(diag, token, "expression");
+		return error_expected_semicolon_after_expr(diag, token);
 
 	return std::make_unique<tree::ExprStatement>(std::move(expr));
 }
@@ -616,7 +627,7 @@ Parser::parseDoStatement()
 		return nullptr;
 
 	if (!match(Token::semicolon))
-		return error_expected_semicolon(diag, token, "do-while statement");
+		return error_expected_semicolon_after_do_while(diag, token);
 
 	return std::make_unique<tree::DoStatement>(
 	                std::move(ifExpr), std::move(body));
@@ -634,7 +645,7 @@ Parser::parseReturnStatement()
 		return nullptr;
 
 	if (!match(Token::semicolon))
-		return error_expected_semicolon(diag, token, "expression");
+		return error_expected_semicolon_after_expr(diag, token);
 
 	return std::make_unique<tree::ReturnStatement>(
 	        std::move(retExpr));
