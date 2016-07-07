@@ -369,11 +369,13 @@ Parser::parseClass()
 		if (token == Token::r_brace)
 			break;
 
-		/*
-		if (match(Token::comma)) {
-			lexer.unget(var.typename());
-			lexer.unget("var");
-		}*/
+		while (match(Token::comma)) {
+			auto var = parseVariable(var_type);
+			if (var == nullptr)
+				return nullptr;
+
+			members.push_back(std::move(var));
+		}
 
 		if (!match(Token::semicolon))
 			return error(diag, token, Diagnostic::ExpectedSemicolon,
