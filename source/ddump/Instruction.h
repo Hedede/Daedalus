@@ -87,7 +87,8 @@ void printOp(std::ostream& os, Instruction const& i)
 unsigned opSize(Opcode op)
 {
 	switch (op) {
-	default: return 1;
+	default:
+		return 1;
 	case Opcode::Call:
 	case Opcode::CallExtern:
 	case Opcode::PushAdr:
@@ -96,8 +97,10 @@ unsigned opSize(Opcode op)
 	case Opcode::PushInt:
 	case Opcode::PushStr:
 	case Opcode::Jmp:
-	case Opcode::JmpFalse: return 5;
-	case Opcode::ArrayVar: return 6;
+	case Opcode::JmpFalse:
+		return 5;
+	case Opcode::ArrayVar:
+		return 6;
 	};
 }
 
