@@ -271,7 +271,7 @@ Parser::parseFunctionPrototype()
 	Type ret{type, false, 1};
 
 	// Function name
-	if (!isIdentifier(getNextToken()))
+	if (!isIdentifier(token))
 		return error(diag, token, Diagnostic::UnexpectedToken,
 		             "identifier");
 
