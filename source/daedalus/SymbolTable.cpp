@@ -26,14 +26,41 @@ SymbolRef SymbolTable::getSymbol(std::string name)
 	return iter->second;
 }
 
-Scope* SymbolTable::getScope(unsigned ref)
+Scope* SymbolTable::getScope(SymbolRef ref)
 {
-	if (ref == SymbolRef::undefined)
+	if (!ref.isValid())
 		return nullptr;
 
-	assert(ref < scopes.size());
+	assert(ref.scopeId < scopes.size());
 
-	return &scopes[ref];
+	return &scopes[ref.scopeId];
+}
+
+Symbol* SymbolTable::getSymbol(SymbolRef ref)
+{
+	if (!ref.isValid())
+		return nullptr;
+
+	auto scope = getScope(ref);
+	if (!scope)
+		return nullptr;
+
+	switch (ref.kind) {
+	case Symbol::Variable:
+		return &scope->variables[ref.index];
+	case Symbol::Function:
+		return &scope->functions[ref.index];
+	case Symbol::Class:
+		return &scope->classes[ref.index];
+	case Symbol::Instance:
+		return &scope->instances[ref.index];
+	case Symbol::Prototype:
+		return &scope->prototypes[ref.index];
+	default:
+		break;
+	}
+
+	return nullptr;
 }
 
 unsigned SymbolTable::pushScope()

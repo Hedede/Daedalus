@@ -52,7 +52,8 @@ struct SymbolTable {
 	SymbolTable();
 
 	SymbolRef getSymbol(std::string name);
-	Scope*    getScope(unsigned ref);
+	Scope*    getScope(SymbolRef ref);
+	Symbol*   getSymbol(SymbolRef ref);
 
 	unsigned pushScope();
 	unsigned currentScope();
