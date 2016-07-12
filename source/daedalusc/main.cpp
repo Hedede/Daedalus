@@ -10,6 +10,7 @@
 #include <aw/io/WriteStream.h>
 #include <daedalus/syntax/Declaration.h>
 #include <daedalus/syntax/Expression.h>
+#include <daedalus/semantic/SymbolTable.h>
 #include <daedalus/utility/Printer.h>
 #include <daedalus/utility/DiagnosticHelper.h>
 #include <daedalus/parser/Parser.h>
@@ -46,7 +47,8 @@ int main(char** argv)
 	SourceBuffer buffer(file);
 	Lexer lexer(&buffer);
 	DiagnosticHelper diag(buffer);
-	Parser parser(lexer, diag);
+	SymbolTable symtab;
+	Parser parser(lexer, diag, symtab);
 
 	TestWriteStream out;
 	Printer printer(out);

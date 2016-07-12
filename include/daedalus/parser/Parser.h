@@ -24,15 +24,15 @@ class Instance;
 class Expression;
 } // namespace tree
 
+class SymbolTable;
 class DiagnosticHelper;
 
 /*!
  * Parser transforms token stream into the Abstract Syntax Tree
  */
-class Parser {
-public:
-	Parser(Lexer& lexer, DiagnosticHelper& diag)
-		: lexer(lexer), diag(diag)
+struct Parser {
+	Parser(Lexer& lexer, DiagnosticHelper& diag, SymbolTable& symtab)
+		: lexer(lexer), diag(diag), symtab(symtab)
 	{
 		token = lexer.currentToken();
 	}
@@ -61,12 +61,15 @@ private:
 	/*! Diagnostics helper for error reporting */
 	DiagnosticHelper& diag;
 
+	/*! Parser uses Symbol Table for semantic analysis */
+	SymbolTable& symtab;
+
 	/*!
 	 * Match token, and consume if matched.
 	 */
 	bool match(Token::Kind expected);
 
-	TypeDef* readType();
+	Class* readType();
 
 	uptr<tree::FunctionProto> parseFunctionPrototype();
 	uptr<tree::Declaration> parseFunctionDefinition();

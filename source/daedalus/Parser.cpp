@@ -15,6 +15,8 @@
 #include <daedalus/syntax/Statement.h>
 #include <daedalus/syntax/Expression.h>
 
+#include <daedalus/semantic/SymbolTable.h>
+
 #include <daedalus/utility/PrintToken.h>
 #include <daedalus/utility/DiagnosticHelper.h>
 #include <daedalus/parser/Parser.h>
@@ -130,19 +132,25 @@ Parser::parseDeclaration()
 	return decl;
 }
 
-TypeDef* Parser::readType()
+Class* Parser::readType()
 {
 	if (!isTypeName(token))
 		return error(diag, token, Diagnostic::UnexpectedToken, "type name");
 
-	//return symtab.find(token);
-	auto type = new TypeDef{token.data()};
-	if (!type)
+	auto ref   = symtab.getSymbol(token.data());
+	if (ref.kind != Symbol::Class)
 		return error(diag, token, Diagnostic::UnknownType);
+
+	auto scope = symtab.getScope(ref);
+	if (!scope)
+		return error(diag, token, Diagnostic::UnknownType);
+
+	//return symtab.find(token);
+	auto& type = scope->classes[ref.index];
 
 	getNextToken(); // consume identifier
 
-	return type;
+	return &type;
 }
 
 /*
