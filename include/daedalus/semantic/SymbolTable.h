@@ -25,28 +25,6 @@ struct Scope {
 	std::vector<Prototype> prototypes;
 };
 
-struct SymbolRef {
-	static constexpr unsigned undefined = std::numeric_limits<unsigned>::max();
-
-	SymbolRef()
-		: kind(Symbol::Undefined)
-	{}
-
-	SymbolRef(Symbol::Kind kind, size_t scope, size_t index)
-		: kind(kind), scopeId(scope), index(index)
-	{}
-
-	bool isValid()
-	{
-		return kind != Symbol::Undefined;
-	}
-
-	aw::u64 kind    : 3;
-	aw::u64 scopeId : 24;
-	aw::u64 index   : 29;
-};
-
-using SymbolRefList = std::vector<SymbolRef>;
 
 struct SymbolTable {
 	SymbolTable();
