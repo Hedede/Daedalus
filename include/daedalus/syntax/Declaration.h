@@ -10,7 +10,7 @@
 #define Daedalus_Declaration
 #include <vector>
 #include <aw/types/types.h>
-#include <daedalus/semantic/Type.h>
+#include <daedalus/semantic/Symbol.h>
 namespace daedalus {
 using StringList = std::vector<std::string>;
 using namespace aw;

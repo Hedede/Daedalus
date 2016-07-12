@@ -8,10 +8,8 @@
  */
 #ifndef Daedalus_Type
 #define Daedalus_Type
-//#include <daedalus/semantic/Symbol.h>
 namespace daedalus {
 class Class;
-
 /*!
  * Reference to a type, with added type modifiers.
  */
@@ -20,6 +18,5 @@ struct Type {
 	bool isConst;
 	unsigned count;
 };
-
 } // namespace daedalus
 #endif//Daedalus_Type
