@@ -15,6 +15,12 @@ SymbolTable::SymbolTable()
 	scopes.emplace_back();
 	mapStack.emplace_back();
 	scopeStack.emplace_back(0);
+
+	insertClass({"void",   TypeID::Void});
+	insertClass({"int",    TypeID::Integer});
+	insertClass({"float",  TypeID::Float});
+	insertClass({"string", TypeID::String});
+	insertClass({"func",   TypeID::FuncRef});
 }
 
 SymbolRef SymbolTable::getSymbol(std::string name)
