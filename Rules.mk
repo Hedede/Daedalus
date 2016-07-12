@@ -52,6 +52,7 @@ CXXFLAGS  = -std=c++14
 CXXFLAGS += -fno-exceptions
 CXXFLAGS += -fvisibility=default
 CXXFLAGS += -fdiagnostics-color=auto
+CXXFLAGS += -Wall -pedantic
 CXXFLAGS_DEBUG   = -g -DDEBUG -D_DEBUG
 CXXFLAGS_RELEASE = -O3 -DNDEBUG
 
