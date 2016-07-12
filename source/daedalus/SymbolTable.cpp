@@ -13,7 +13,6 @@ SymbolTable::SymbolTable()
 {
 	// Create global scope
 	scopes.emplace_back();
-	mapStack.emplace_back();
 	scopeStack.emplace_back(0);
 
 	insertClass({"void",   TypeID::Void});
@@ -25,8 +24,8 @@ SymbolTable::SymbolTable()
 
 SymbolRef SymbolTable::getSymbol(std::string name)
 {
-	auto iter = top().find(name);
-	if (iter == std::end(top()))
+	auto iter = table.find(name);
+	if (iter == std::end(table))
 		return {};
 
 	return iter->second;
@@ -73,7 +72,7 @@ unsigned SymbolTable::pushScope()
 {
 	scopes.emplace_back();
 
-	mapStack.emplace_back(mapStack.back());
+	tableDeltas.emplace_back();
 	scopeStack.emplace_back(scopes.size() - 1);
 
 	return currentScope();
@@ -84,7 +83,7 @@ unsigned SymbolTable::currentScope()
 	// scopeStack should NEVER by empty, if it's empty, I screwed up
 	assert(!scopeStack.empty());
 	assert(scopeStack.size() < std::numeric_limits<unsigned>::max());
-	return scopeStack.size() - 1;
+	return scopeStack.back();
 }
 
 void SymbolTable::popScope()
@@ -93,8 +92,28 @@ void SymbolTable::popScope()
 	if (currentScope() == 0)
 		return;
 
-	mapStack.pop_back();
+	for (auto& entry : tableDeltas.back())
+		table[entry.first] = entry.second;
+
+	tableDeltas.pop_back();
 	scopeStack.pop_back();
+}
+
+void SymbolTable::saveSymbol(std::string name)
+{
+	auto iter = table.find(name);
+	if (iter == std::end(table))
+		tableDeltas.back().emplace_back(name, SymbolRef{});
+	else
+		tableDeltas.back().emplace_back(*iter);
+}
+
+void SymbolTable::insertSymbol(std::string name, SymbolRef&& ref)
+{
+	if (currentScope() != 0)
+		saveSymbol(name);
+
+	table[name] = ref;
 }
 
 auto SymbolTable::insertVariable(Variable&& var) -> InsertResult
@@ -109,7 +128,8 @@ auto SymbolTable::insertVariable(Variable&& var) -> InsertResult
 	variables.emplace_back(std::move(var));
 
 	auto& name = variables.back().name;
-	top()[name] = {Symbol::Variable, currentScope(), variables.size() - 1};
+	auto index = variables.size() - 1;
+	insertSymbol(name, {Symbol::Variable, currentScope(), index});
 
 	return Success;
 }
@@ -127,7 +147,8 @@ auto SymbolTable::insertClass(Class&& type) -> InsertResult
 	classes.emplace_back(std::move(type));
 
 	auto& name = classes.back().name;
-	top()[name] = {Symbol::Class, currentScope(), classes.size() - 1};
+	auto index = classes.size() - 1;
+	insertSymbol(name, {Symbol::Class, currentScope(), index});
 
 	return Success;
 }
@@ -145,7 +166,8 @@ auto SymbolTable::insertFunction(Function&& func) -> InsertResult
 	functions.emplace_back(std::move(func));
 
 	auto& name = functions.back().name;
-	top()[name] = {Symbol::Function, currentScope(), functions.size() - 1};
+	auto index = functions.size() - 1;
+	insertSymbol(name, {Symbol::Function, currentScope(), index});
 
 	return Success;
 }
@@ -163,7 +185,8 @@ auto SymbolTable::insertInstance(Instance&& func) -> InsertResult
 	instances.emplace_back(std::move(func));
 
 	auto& name = instances.back().name;
-	top()[name] = {Symbol::Instance, currentScope(), instances.size() - 1};
+	auto index = instances.size() - 1;
+	insertSymbol(name, {Symbol::Instance, currentScope(), index});
 
 	return Success;
 }
@@ -181,7 +204,8 @@ auto SymbolTable::insertPrototype(Prototype&& func) -> InsertResult
 	prototypes.emplace_back(std::move(func));
 
 	auto& name = prototypes.back().name;
-	top()[name] = {Symbol::Prototype, currentScope(), prototypes.size() - 1};
+	auto index = prototypes.size() - 1;
+	insertSymbol(name, {Symbol::Prototype, currentScope(), index});
 
 	return Success;
 }

@@ -75,20 +75,17 @@ private:
 	using SymbolMap = std::unordered_map<std::string, SymbolRef>;
 
 	// TODO: custom open-addressed hash-table
-	std::vector<SymbolMap> mapStack;
-	std::vector<size_t> scopeStack;
-	// TODO: keep deltas instead of copying whole ht
-	// using Entry = std::pair<std::string, SymbolRef>;
-	// using EntryList = std::vector<Entry>;
-	// std::vector<EntryList> tableDeltas;
+	SymbolMap table;
 
-	SymbolMap& top()
-	{
-		return mapStack.back();
-	}
+	void saveSymbol(std::string name);
+	void insertSymbol(std::string name, SymbolRef&& ref);
+
+	using Entry = std::pair<std::string, SymbolRef>;
+	using EntryList = std::vector<Entry>;
+	std::vector<EntryList> tableDeltas;
 
 	std::vector<Scope> scopes;
-
+	std::vector<unsigned> scopeStack;
 };
 } // namespace daedalus
 #endif//Daedalus_SymbolTable
