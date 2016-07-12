@@ -102,7 +102,9 @@ auto SymbolTable::insertVariable(Variable&& var) -> InsertResult
 	auto& variables = scopes[currentScope()].variables;
 	variables.emplace_back(std::move(var));
 
-	top()[var.name] = {currentScope(), variables.size() - 1};
+	auto& name = variables.back().name;
+	top()[name] = {Symbol::Variable, currentScope(), variables.size() - 1};
+
 	return Success;
 }
 
@@ -118,7 +120,9 @@ auto SymbolTable::insertClass(Class&& type) -> InsertResult
 	auto& classes = scopes[currentScope()].classes;
 	classes.emplace_back(std::move(type));
 
-	top()[type.name] = {currentScope(), classes.size() - 1};
+	auto& name = classes.back().name;
+	top()[name] = {Symbol::Class, currentScope(), classes.size() - 1};
+
 	return Success;
 }
 
@@ -134,7 +138,9 @@ auto SymbolTable::insertFunction(Function&& func) -> InsertResult
 	auto& functions = scopes[currentScope()].functions;
 	functions.emplace_back(std::move(func));
 
-	top()[func.name] = {currentScope(), functions.size() - 1};
+	auto& name = functions.back().name;
+	top()[name] = {Symbol::Function, currentScope(), functions.size() - 1};
+
 	return Success;
 }
 
@@ -150,7 +156,9 @@ auto SymbolTable::insertInstance(Instance&& func) -> InsertResult
 	auto& instances = scopes[currentScope()].instances;
 	instances.emplace_back(std::move(func));
 
-	top()[func.name] = {currentScope(), instances.size() - 1};
+	auto& name = instances.back().name;
+	top()[name] = {Symbol::Instance, currentScope(), instances.size() - 1};
+
 	return Success;
 }
 
@@ -166,7 +174,9 @@ auto SymbolTable::insertPrototype(Prototype&& func) -> InsertResult
 	auto& prototypes = scopes[currentScope()].prototypes;
 	prototypes.emplace_back(std::move(func));
 
-	top()[func.name] = {currentScope(), prototypes.size() - 1};
+	auto& name = prototypes.back().name;
+	top()[name] = {Symbol::Prototype, currentScope(), prototypes.size() - 1};
+
 	return Success;
 }
 } // namespace daedalus
