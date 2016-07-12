@@ -13,6 +13,7 @@ namespace daedalus {
 class Declaration;
 struct Symbol {
 	enum Kind {
+		Undefined,
 		Variable,
 		Function,
 		Class,
@@ -21,14 +22,35 @@ struct Symbol {
 		NumKinds
 	};
 
+	Symbol(std::string name, Kind kind)
+		: name(name), kind(kind)
+	{}
+
 	std::string name;
 	Kind kind;
 };
 
 struct Variable : Symbol { };
 struct Function : Symbol { };
-struct Class : Symbol { };
 struct Prototype : Symbol { };
 struct Instance : Symbol { };
+
+enum class TypeID {
+	Void,
+	Integer,
+	Float,
+	String,
+	FuncRef,
+	Function,
+	Class
+};
+
+struct Class : Symbol {
+	Class(std::string name, TypeID id)
+		: Symbol(name, Symbol::Class), id(id)
+	{ }
+
+	TypeID id;
+};
 } // namespace daedalus
 #endif//Daedalus_Symbol
