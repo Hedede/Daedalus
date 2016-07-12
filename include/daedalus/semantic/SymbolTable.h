@@ -10,6 +10,7 @@
 #define Daedalus_SymbolTable
 #include <limits>
 #include <unordered_map>
+#include <aw/types/types.h>
 #include <daedalus/semantic/Symbol.h>
 namespace daedalus {
 struct Scope {
@@ -27,18 +28,22 @@ struct Scope {
 struct SymbolRef {
 	static constexpr unsigned undefined = std::numeric_limits<unsigned>::max();
 
-	SymbolRef() = default;
-	SymbolRef(size_t scope, size_t index)
-		: scopeId(unsigned(scope)), index(unsigned(index))
+	SymbolRef()
+		: kind(Symbol::Undefined)
+	{}
+
+	SymbolRef(Symbol::Kind kind, size_t scope, size_t index)
+		: kind(kind), scopeId(scope), index(index)
 	{}
 
 	bool isValid()
 	{
-		return scopeId != undefined && index != undefined;
+		return kind != Symbol::Undefined;
 	}
 
-	unsigned scopeId = undefined;
-	unsigned index   = undefined;
+	aw::u64 kind    : 3;
+	aw::u64 scopeId : 24;
+	aw::u64 index   : 29;
 };
 
 using SymbolRefList = std::vector<SymbolRef>;
