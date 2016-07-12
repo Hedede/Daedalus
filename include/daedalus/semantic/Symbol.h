@@ -9,9 +9,12 @@
 #ifndef Daedalus_Symbol
 #define Daedalus_Symbol
 #include <vector>
+#include <limits>
+#include <daedalus/semantic/Type.h>
 namespace daedalus {
-class Declaration;
 struct Symbol {
+	static constexpr unsigned undefined = std::numeric_limits<unsigned>::max();
+
 	enum Kind {
 		Undefined,
 		Variable,
@@ -51,10 +54,25 @@ struct SymbolRef {
 
 using SymbolRefList = std::vector<SymbolRef>;
 
-struct Variable : Symbol { };
-struct Function : Symbol { };
-struct Prototype : Symbol { };
-struct Instance : Symbol { };
+struct Variable  : Symbol {
+	Type type;
+};
+
+struct Function  : Symbol {
+	Type returnType;
+	std::vector<unsigned> args;
+	unsigned scope = Symbol::undefined;
+};
+
+struct Prototype : Symbol {
+	SymbolRef parent;
+	unsigned scope = Symbol::undefined;
+};
+
+struct Instance  : Symbol {
+	SymbolRef parent;
+	unsigned scope = Symbol::undefined;
+};
 
 enum class TypeID {
 	Void,
@@ -71,7 +89,12 @@ struct Class : Symbol {
 		: Symbol(name, Symbol::Class), id(id)
 	{ }
 
+	Class(std::string name, unsigned scope)
+		: Symbol(name, Symbol::Class), id(TypeID::Class), scope(scope)
+	{ }
+
 	TypeID id;
+	unsigned scope = Symbol::undefined;
 };
 } // namespace daedalus
 #endif//Daedalus_Symbol
