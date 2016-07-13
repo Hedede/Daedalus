@@ -58,11 +58,18 @@ struct SymbolRef {
 
 using SymbolRefList = std::vector<SymbolRef>;
 
-struct Variable  : Symbol {
+struct Variable : Symbol {
+	Variable(std::string name, Type type)
+		: Symbol(name, Symbol::Variable), type(type)
+	{}
 	Type type;
 };
 
-struct Function  : Symbol {
+struct Function : Symbol {
+	Function(std::string name, Type ret)
+		: Symbol(name, Symbol::Function), returnType(ret)
+	{}
+
 	Type returnType;
 	std::vector<unsigned> args;
 	unsigned scope = Symbol::undefined;

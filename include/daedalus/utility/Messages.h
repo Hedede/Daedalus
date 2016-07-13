@@ -11,5 +11,7 @@ DIAG(error, ExpectedPrototypeName, "Unexpected token ‘%0’: expected prototyp
 DIAG(error, ExpectedConstantInitializer, "Unexpected token ‘%0’: expected constant initializer.")
 DIAG(error, ExpectedExpression, "Expected expression.")
 DIAG(error, ArrayNotAllowed, "Array is not allowed here.")
+DIAG(error, RedefinedVariable, "Redefined variable: ‘%0’.")
+DIAG(error, SymbolAlreadyDefined, "Symbol already defined: ‘%0’.")
 DIAG(error, UnknownType, "Unknown type: ‘%0’.")
 DIAG(error, NotImplemented, "Not implemented: %0.")

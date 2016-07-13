@@ -137,7 +137,7 @@ Class* Parser::readType()
 	if (!isTypeName(token))
 		return error(diag, token, Diagnostic::UnexpectedToken, "type name");
 
-	auto ref   = symtab.getSymbol(token.data());
+	auto ref = symtab.getSymbol(token.data());
 	if (ref.kind != Symbol::Class)
 		return error(diag, token, Diagnostic::UnknownType);
 
@@ -163,8 +163,9 @@ Parser::parseVariable(Type type)
 	if (!isIdentifier(token))
 		return error(diag, token, Diagnostic::ExpectedIdentifier);
 	
-	// TODO: symbol table lookup
-	std::string name = token.data();
+	auto identifier = token;
+	auto name = token.data();
+
 	getNextToken(); // consume identifier
 
 	auto var = std::make_unique<tree::Variable>(name, type);
@@ -179,6 +180,12 @@ Parser::parseVariable(Type type)
 		if (!match(Token::r_bracket))
 			return error_unexpected_token(diag, token, Token::r_brace);
 	}
+
+	auto result = symtab.insertVariable({name, type});
+	if (!result.isValid())
+		return error(diag, identifier, Diagnostic::RedefinedVariable);
+
+	var->setSymbolRef(result);
 
 	return var;
 }
@@ -313,8 +320,14 @@ Parser::parseFunctionPrototype()
 	if (!isIdentifier(token))
 		return error(diag, token, Diagnostic::ExpectedIdentifier);
 
-	// TODO: symbol table lookup
 	std::string name = token.data();
+
+	// Insert forward-declaration into symbol table
+	auto sym = symtab.getSymbol(name);
+	if (!sym.isValid())
+		symtab.insertFunction({name, ret});
+	else if (sym.kind != Symbol::Function)
+		return error(diag, token, Diagnostic::SymbolAlreadyDefined);
 
 	// consume identifier
 	getNextToken();

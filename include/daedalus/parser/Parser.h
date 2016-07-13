@@ -51,6 +51,7 @@ struct Parser {
 	{
 		return token = lexer.nextToken();
 	}
+
 private:
 	/*! Current lookahead (peek) token. */
 	Token token;
