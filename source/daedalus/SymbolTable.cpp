@@ -92,8 +92,12 @@ void SymbolTable::popScope()
 	if (currentScope() == 0)
 		return;
 
-	for (auto& entry : tableDeltas.back())
-		table[entry.first] = entry.second;
+	for (auto& entry : tableDeltas.back()) {
+		if (entry.second.isValid())
+			table[entry.first] = entry.second;
+		else
+			table.erase(entry.first);
+	}
 
 	tableDeltas.pop_back();
 	scopeStack.pop_back();
