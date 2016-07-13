@@ -38,6 +38,10 @@ struct SymbolRef {
 		: kind(Symbol::Undefined)
 	{}
 
+	SymbolRef(Symbol::Kind kind)
+		: kind(kind), scopeId{0}, index{0}
+	{}
+
 	SymbolRef(Symbol::Kind kind, size_t scope, size_t index)
 		: kind(kind), scopeId(scope), index(index)
 	{}
@@ -69,7 +73,7 @@ struct Prototype : Symbol {
 	unsigned scope = Symbol::undefined;
 };
 
-struct Instance  : Symbol {
+struct Instance : Symbol {
 	SymbolRef parent;
 	unsigned scope = Symbol::undefined;
 };

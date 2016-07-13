@@ -108,7 +108,7 @@ void SymbolTable::saveSymbol(std::string name)
 		tableDeltas.back().emplace_back(*iter);
 }
 
-void SymbolTable::insertSymbol(std::string name, SymbolRef&& ref)
+void SymbolTable::insertSymbol(std::string name, SymbolRef ref)
 {
 	if (currentScope() != 0)
 		saveSymbol(name);
@@ -116,12 +116,12 @@ void SymbolTable::insertSymbol(std::string name, SymbolRef&& ref)
 	table[name] = ref;
 }
 
-auto SymbolTable::insertVariable(Variable&& var) -> InsertResult
+SymbolRef SymbolTable::insertVariable(Variable&& var)
 {
 	auto sym = getSymbol(var.name);
 	if (sym.isValid()) {
 		if (sym.scopeId == currentScope())
-			return AlreadyDefined;
+			return {Symbol::Undefined};
 	}
 
 	auto& variables = scopes[currentScope()].variables;
@@ -129,84 +129,82 @@ auto SymbolTable::insertVariable(Variable&& var) -> InsertResult
 
 	auto& name = variables.back().name;
 	auto index = variables.size() - 1;
-	insertSymbol(name, {Symbol::Variable, currentScope(), index});
 
-	return Success;
+	SymbolRef result{Symbol::Variable, currentScope(), index};
+	insertSymbol(name, result);
+
+	return result;
 }
 
-auto SymbolTable::insertClass(Class&& type) -> InsertResult
+SymbolRef SymbolTable::insertClass(Class&& type)
 {
-	if (currentScope() != 0)
-		return NotAllowedHere;
-
 	auto sym = getSymbol(type.name);
 	if (sym.isValid())
-		return AlreadyDefined;
+		return {};
 
 	auto& classes = scopes[currentScope()].classes;
 	classes.emplace_back(std::move(type));
 
 	auto& name = classes.back().name;
 	auto index = classes.size() - 1;
-	insertSymbol(name, {Symbol::Class, currentScope(), index});
 
-	return Success;
+	SymbolRef result{Symbol::Class, currentScope(), index};
+	insertSymbol(name, result);
+
+	return result;
 }
 
-auto SymbolTable::insertFunction(Function&& func) -> InsertResult
+SymbolRef SymbolTable::insertFunction(Function&& func)
 {
-	if (currentScope() != 0)
-		return NotAllowedHere;
-
 	auto sym = getSymbol(func.name);
 	if (sym.isValid())
-		return AlreadyDefined;
+		return {};
 
 	auto& functions = scopes[currentScope()].functions;
 	functions.emplace_back(std::move(func));
 
 	auto& name = functions.back().name;
 	auto index = functions.size() - 1;
-	insertSymbol(name, {Symbol::Function, currentScope(), index});
 
-	return Success;
+	SymbolRef result{Symbol::Function, currentScope(), index};
+	insertSymbol(name, result);
+
+	return result;
 }
 
-auto SymbolTable::insertInstance(Instance&& func) -> InsertResult
+SymbolRef SymbolTable::insertInstance(Instance&& func)
 {
-	if (currentScope() != 0)
-		return NotAllowedHere;
-
 	auto sym = getSymbol(func.name);
 	if (sym.isValid())
-		return AlreadyDefined;
+		return {};
 
 	auto& instances = scopes[currentScope()].instances;
 	instances.emplace_back(std::move(func));
 
 	auto& name = instances.back().name;
 	auto index = instances.size() - 1;
-	insertSymbol(name, {Symbol::Instance, currentScope(), index});
 
-	return Success;
+	SymbolRef result{Symbol::Instance, currentScope(), index};
+	insertSymbol(name, result);
+
+	return result;
 }
 
-auto SymbolTable::insertPrototype(Prototype&& func) -> InsertResult
+SymbolRef SymbolTable::insertPrototype(Prototype&& func)
 {
-	if (currentScope() != 0)
-		return NotAllowedHere;
-
 	auto sym = getSymbol(func.name);
 	if (sym.isValid())
-		return AlreadyDefined;
+		return {};
 
 	auto& prototypes = scopes[currentScope()].prototypes;
 	prototypes.emplace_back(std::move(func));
 
 	auto& name = prototypes.back().name;
 	auto index = prototypes.size() - 1;
-	insertSymbol(name, {Symbol::Prototype, currentScope(), index});
 
-	return Success;
+	SymbolRef result{Symbol::Prototype, currentScope(), index};
+	insertSymbol(name, result);
+
+	return result;
 }
 } // namespace daedalus

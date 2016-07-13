@@ -43,11 +43,11 @@ struct SymbolTable {
 		NotAllowedHere,
 	};
 
-	InsertResult insertVariable(Variable&& var);
-	InsertResult insertClass(Class&& type);
-	InsertResult insertFunction(Function&& func);
-	InsertResult insertInstance(Instance&& func);
-	InsertResult insertPrototype(Prototype&& func);
+	SymbolRef insertVariable(Variable&& var);
+	SymbolRef insertClass(Class&& type);
+	SymbolRef insertFunction(Function&& func);
+	SymbolRef insertInstance(Instance&& func);
+	SymbolRef insertPrototype(Prototype&& func);
 
 private:
 	using SymbolMap = std::unordered_map<std::string, SymbolRef>;
@@ -56,7 +56,7 @@ private:
 	SymbolMap table;
 
 	void saveSymbol(std::string name);
-	void insertSymbol(std::string name, SymbolRef&& ref);
+	void insertSymbol(std::string name, SymbolRef ref);
 
 	using Entry = std::pair<std::string, SymbolRef>;
 	using EntryList = std::vector<Entry>;
